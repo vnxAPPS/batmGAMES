@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Slidenotefication 9 — битва с ботом</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="../fnf-core/style.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game"></canvas>
+  <a class="back" href="../">⬅ к играм</a>
+  <button id="botplay">🤖 BOT PLAY</button>
+  <div id="overlay">
+    <h1>🌀 Slidenotefication 9</h1>
+    <p>Битва с ботом 🤖 на сцене: 26 нот-букв. На компьютере жми клавишу, что написана на ноте (A–Z), на телефоне тапай в ритм. Бот поёт свои куски справа.</p>
+    <button id="playBtn">▶ Играть</button>
+  </div>
+</div>
+
+<script>
+  window.FNF_CONFIG = {
+    song: "slide9",
+    title: "🌀 Slidenotefication 9",
+    hint: "Битва с ботом 🤖: 26 нот-букв. Компьютер — клавиши A–Z, телефон — тапай в ритм.",
+  };
+</script>
+<script src="../fnf-core/engine.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>FNF Beat Battle</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="../fnf-core/style.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game"></canvas>
+  <a class="back" href="../">⬅ к играм</a>
+  <button id="botplay">🤖 BOT PLAY</button>
+  <div id="overlay">
+    <h1>🎹 FNF Beat Battle</h1>
+    <p>Классика: лови стрелки в такт! Тапай по нужной полосе или жми стрелки / DFJK на клавиатуре.</p>
+    <button id="playBtn">▶ Играть</button>
+  </div>
+</div>
+
+<script>
+  window.FNF_CONFIG = {
+    song: "beat",
+    title: "🎹 FNF Beat Battle",
+    hint: "Классика: лови стрелки в такт! Тапай по полосе или жми стрелки / DFJK.",
+  };
+</script>
+<script src="../fnf-core/engine.js"></script>
+</body>
+</html>

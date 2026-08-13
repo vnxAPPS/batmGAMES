@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>👤 Мой персонаж</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg1: #05070c;
+  --bg2: #0a0d12;
+  --bg3: #0f131c;
+  --card: #161d2b;
+  --accent: #a23cf5;
+  --text: #f2f4ff;
+  --muted: #8b92b0;
+  --border: rgba(255,255,255,0.08);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; overflow:hidden; background:var(--bg1); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  user-select:none; -webkit-tap-highlight-color:transparent; }
+
+#wrap { display:flex; flex-direction:column; height:100vh; max-width:480px; margin:0 auto; }
+
+#topbar { display:flex; align-items:center; gap:10px; padding:12px 16px;
+  background:var(--bg2); border-bottom:1px solid var(--border); }
+.back { color:var(--muted); text-decoration:none; font-size:14px; }
+#topbar h1 { font-size:16px; font-weight:800; flex:1; text-align:center; }
+.spacer { width:36px; }
+
+#canvas-area { flex:1; display:flex; align-items:center; justify-content:center;
+  padding:20px; position:relative; overflow:hidden; }
+#character-canvas { max-width:100%; max-height:100%; }
+
+#controls { background:var(--bg2); border-top:1px solid var(--border);
+  padding:16px; display:flex; flex-direction:column; gap:14px; }
+
+.control-row { display:flex; flex-direction:column; gap:6px; }
+.control-label { font-size:12px; font-weight:700; color:var(--muted);
+  text-transform:uppercase; letter-spacing:0.05em; }
+.slider-wrap { display:flex; align-items:center; gap:10px; }
+.slider-btn { width:36px; height:36px; border:none; border-radius:999px;
+  background:var(--card); color:var(--text); font-size:18px; font-weight:800;
+  cursor:pointer; transition:transform 0.1s; }
+.slider-btn:active { transform:scale(0.92); }
+.slider-content { flex:1; display:flex; align-items:center; justify-content:center;
+  height:48px; border-radius:12px; background:var(--card);
+  font-size:14px; font-weight:700; transition:transform 0.2s; }
+
+.color-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+.color-btn { aspect-ratio:1; border:2px solid transparent; border-radius:999px;
+  cursor:pointer; transition:all 0.15s; position:relative; }
+.color-btn.active { border-color:#fff; transform:scale(1.15); }
+.color-btn::after { content:''; position:absolute; inset:0; border-radius:999px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,0.3); }
+
+#name-input { width:100%; padding:12px; border:1px solid var(--border);
+  border-radius:12px; background:var(--card); color:var(--text);
+  font:inherit; font-size:15px; }
+#name-input::placeholder { color:var(--muted); }
+
+#save-btn { width:100%; padding:14px; border:none; border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),#6414c9);
+  color:#fff; font:inherit; font-size:15px; font-weight:800;
+  cursor:pointer; box-shadow:0 6px 20px rgba(162,60,245,0.4);
+  transition:transform 0.1s; }
+#save-btn:active { transform:scale(0.97); }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="topbar">
+    <a class="back" href="../">⬅</a>
+    <h1>👤 Мой персонаж</h1>
+    <div class="spacer"></div>
+  </div>
+
+  <div id="canvas-area">
+    <canvas id="character-canvas" width="300" height="400"></canvas>
+  </div>
+
+  <div id="controls">
+    <div class="control-row">
+      <div class="control-label">Ноги</div>
+      <div class="color-grid" id="legs-colors"></div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-label">Торс</div>
+      <div class="color-grid" id="torso-colors"></div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-label">Руки</div>
+      <div class="color-grid" id="arms-colors"></div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-label">Голова</div>
+      <div class="color-grid" id="head-colors"></div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-label">Прическа</div>
+      <div class="slider-wrap">
+        <button class="slider-btn" id="hair-prev">‹</button>
+        <div class="slider-content" id="hair-display">Стандарт</div>
+        <button class="slider-btn" id="hair-next">›</button>
+      </div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-label">Эмоция</div>
+      <div class="slider-wrap">
+        <button class="slider-btn" id="face-prev">‹</button>
+        <div class="slider-content" id="face-display">😊 Улыбка</div>
+        <button class="slider-btn" id="face-next">›</button>
+      </div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-label">Имя персонажа</div>
+      <input type="text" id="name-input" placeholder="Введи имя..." maxlength="16">
+    </div>
+
+    <button id="save-btn">💾 Сохранить персонажа</button>
+  </div>
+</div>
+
+<script type="module">
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+const canvas = document.getElementById('character-canvas');
+const ctx = canvas.getContext('2d');
+
+const COLORS = [
+  '#2d4fd6', '#22c55e', '#ffd23e', '#ff4b4b', '#a23cf5', '#00c2ff',
+  '#f97316', '#ec4899', '#8b5cf6', '#10b981', '#0ea5e9', '#64748b'
+];
+
+const HAIR_STYLES = [
+  {id:'none',name:'Без причёски'},
+  {id:'default',name:'Стандарт'},
+  {id:'spiky',name:'Ежик'},
+  {id:'long',name:'Длинные'}
+];
+
+const FACES = [
+  {id:'smile',name:'😊 Улыбка'},
+  {id:'cool',name:'😎 Крутой'},
+  {id:'happy',name:'😄 Весёлый'},
+  {id:'serious',name:'😐 Серьёзный'}
+];
+
+let character = {
+  legs_color: '#2d4fd6',
+  torso_color: '#22c55e',
+  arms_color: '#ffd23e',
+  head_color: '#ffd23e',
+  hair_style: 'default',
+  face_emotion: 'smile',
+  name: ''
+};
+
+// Загрузить существующего персонажа
+const saved = localStorage.getItem('batm_character');
+if (saved) {
+  try {
+    character = {...character, ...JSON.parse(saved)};
+  } catch(e) {}
+}
+document.getElementById('name-input').value = character.name;
+
+function roundRect(x,y,w,h,r,fill) {
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  ctx.fillStyle = fill;
+  ctx.fill();
+}
+
+function drawCharacter() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const cx = 150, cy = 200;
+  const w = 60, legH = 40, torsoH = 50, armW = 20, armH = 40, headH = 50;
+
+  // Тень
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy+120, 35, 8, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Ноги
+  roundRect(cx-w/2+8, cy+torsoH, 20, legH, 6, character.legs_color);
+  roundRect(cx+w/2-28, cy+torsoH, 20, legH, 6, character.legs_color);
+
+  // Торс
+  roundRect(cx-w/2, cy, w, torsoH, 8, character.torso_color);
+
+  // Руки
+  roundRect(cx-w/2-24, cy+8, armW, armH, 6, character.arms_color);
+  roundRect(cx+w/2+4, cy+8, armW, armH, 6, character.arms_color);
+
+  // Голова
+  roundRect(cx-w/2+6, cy-headH+10, w-12, headH, 10, character.head_color);
+
+  // Прическа
+  if (character.hair_style === 'default') {
+    roundRect(cx-w/2+6, cy-headH-5, w-12, 20, 8, '#4a3020');
+  } else if (character.hair_style === 'spiky') {
+    ctx.fillStyle = '#4a3020';
+    for (let i=0; i<5; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx-20+i*10, cy-headH+8);
+      ctx.lineTo(cx-20+i*10-4, cy-headH-8);
+      ctx.lineTo(cx-20+i*10+4, cy-headH-8);
+      ctx.closePath();
+      ctx.fill();
+    }
+  } else if (character.hair_style === 'long') {
+    roundRect(cx-w/2+6, cy-headH-8, w-12, 30, 8, '#4a3020');
+  }
+
+  // Лицо
+  ctx.fillStyle = '#222';
+  if (character.face_emotion === 'smile') {
+    ctx.beginPath();
+    ctx.arc(cx-12, cy-30, 3, 0, Math.PI*2);
+    ctx.arc(cx+12, cy-30, 3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy-18, 10, 0.2*Math.PI, 0.8*Math.PI);
+    ctx.stroke();
+  } else if (character.face_emotion === 'cool') {
+    roundRect(cx-18, cy-32, 12, 4, 2, '#222');
+    roundRect(cx+6, cy-32, 12, 4, 2, '#222');
+    ctx.beginPath();
+    ctx.moveTo(cx-8, cy-20);
+    ctx.lineTo(cx+8, cy-20);
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  } else if (character.face_emotion === 'happy') {
+    ctx.beginPath();
+    ctx.arc(cx-12, cy-30, 4, 0, Math.PI*2);
+    ctx.arc(cx+12, cy-30, 4, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy-16, 12, 0.1*Math.PI, 0.9*Math.PI);
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  } else {
+    ctx.fillRect(cx-14, cy-31, 8, 3);
+    ctx.fillRect(cx+6, cy-31, 8, 3);
+    ctx.fillRect(cx-10, cy-20, 20, 2);
+  }
+}
+
+function setupColorPicker(containerId, colorKey) {
+  const container = document.getElementById(containerId);
+  COLORS.forEach(color => {
+    const btn = document.createElement('button');
+    btn.className = 'color-btn';
+    btn.style.background = color;
+    if (character[colorKey] === color) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      character[colorKey] = color;
+      drawCharacter();
+    });
+    container.appendChild(btn);
+  });
+}
+
+function setupSlider(prevId, nextId, displayId, options, currentKey) {
+  let idx = options.findIndex(o => o.id === character[currentKey]);
+  if (idx < 0) idx = 0;
+
+  const display = document.getElementById(displayId);
+  display.textContent = options[idx].name;
+
+  document.getElementById(prevId).addEventListener('click', () => {
+    idx = (idx - 1 + options.length) % options.length;
+    character[currentKey] = options[idx].id;
+    display.textContent = options[idx].name;
+    drawCharacter();
+  });
+
+  document.getElementById(nextId).addEventListener('click', () => {
+    idx = (idx + 1) % options.length;
+    character[currentKey] = options[idx].id;
+    display.textContent = options[idx].name;
+    drawCharacter();
+  });
+}
+
+setupColorPicker('legs-colors', 'legs_color');
+setupColorPicker('torso-colors', 'torso_color');
+setupColorPicker('arms-colors', 'arms_color');
+setupColorPicker('head-colors', 'head_color');
+setupSlider('hair-prev', 'hair-next', 'hair-display', HAIR_STYLES, 'hair_style');
+setupSlider('face-prev', 'face-next', 'face-display', FACES, 'face_emotion');
+
+document.getElementById('save-btn').addEventListener('click', () => {
+  character.name = document.getElementById('name-input').value.trim() || 'Игрок';
+
+  // Сохранить локально
+  localStorage.setItem('batm_character', JSON.stringify(character));
+
+  // Отправить боту
+  if (tg) {
+    tg.sendData(JSON.stringify(character));
+  } else {
+    alert('✅ Персонаж сохранён! (в localStorage, т.к. не в Telegram)');
+  }
+});
+
+drawCharacter();
+</script>
+</body>
+</html>

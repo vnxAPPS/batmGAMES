@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>batmGAMES 🕹</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg1: #05070c;
+    --bg2: #0a0d12;
+    --bg3: #0f131c;
+    --card: #161d2b;
+    --accent: #3b9eff;
+    --accent2: #a23cf5;
+    --text: #f2f4ff;
+    --muted: #8b92b0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -10%, var(--bg2), var(--bg1));
+    color: var(--text);
+    min-height: 100vh;
+    padding: clamp(16px, 4vw, 24px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .logo {
+    font-size: clamp(24px, 6vw, 32px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .logo .batm { color: var(--accent); }
+  .logo .games { color: var(--text); }
+  .tagline { color: var(--muted); font-size: clamp(13px, 3.5vw, 14px); margin-bottom: 28px; text-align: center; }
+  .grid {
+    width: 100%;
+    max-width: 420px;
+    display: grid;
+    gap: 14px;
+  }
+  .card {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    color: var(--text);
+    background: linear-gradient(160deg, var(--card), #0f131c);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 18px;
+    overflow: hidden;
+    transition: transform 0.15s ease;
+  }
+  .card:active { transform: scale(0.97); }
+  .card .glow {
+    position: absolute;
+    inset: -40% -20% auto;
+    height: 100px;
+    filter: blur(40px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .card.character .glow { background: var(--accent2); }
+  .card.runner .glow { background: var(--accent); }
+  .card.fnf .glow { background: #a23cf5; }
+  .card.slide9 .glow { background: #00c2ff; }
+  .card.territory .glow { background: #ffa94d; }
+  .card h2 { font-size: clamp(17px, 4.5vw, 19px); font-weight: 800; margin-bottom: 5px; position: relative; }
+  .card p { color: var(--muted); font-size: clamp(12px, 3.2vw, 13px); line-height: 1.5; position: relative; }
+  .emoji { font-size: clamp(32px, 8vw, 38px); margin-bottom: 8px; display: block; position: relative; }
+  .badge {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(0, 226, 110, 0.12);
+    color: #22e77c;
+    border: 1px solid rgba(34, 231, 124, 0.3);
+  }
+  .footer { margin-top: auto; padding-top: 24px; color: var(--muted); font-size: 11px; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="logo"><span class="batm">batm</span><span class="games">GAMES</span> 🕹</div>
+  <div class="tagline">Игровая платформа в Telegram — создай персонажа и играй</div>
+
+  <div class="grid">
+    <a class="card character" href="character/">
+      <div class="glow"></div>
+      <span class="emoji">👤</span>
+      <span class="badge">СОЗДАТЬ</span>
+      <h2>Мой персонаж</h2>
+      <p>Создай своего героя Roblox-стиль! Он появится во всех играх платформы.</p>
+    </a>
+
+    <a class="card runner" href="runner/">
+      <div class="glow"></div>
+      <span class="emoji">🏃</span>
+      <span class="badge">ИГРАТЬ</span>
+      <h2>Roblox Runner</h2>
+      <p>Беги и перепрыгивай кубики! Чем дальше — тем быстрее. Побей свой рекорд.</p>
+    </a>
+
+    <a class="card fnf" href="fnf-beat/">
+      <div class="glow"></div>
+      <span class="emoji">🎹</span>
+      <span class="badge">ИГРАТЬ</span>
+      <h2>FNF Beat Battle Solo</h2>
+      <p>Классика: лови 4 стрелки в такт под синт-бит! Тапай по полосе или жми DFJK.</p>
+    </a>
+
+    <a class="card slide9" href="slide9/">
+      <div class="glow"></div>
+      <span class="emoji">🌀</span>
+      <span class="badge">ИГРАТЬ</span>
+      <h2>FNF Slidenotefication 9</h2>
+      <p>Битва с ботом 🤖 на сцене: ноты-стрелки разной формы. Жми A–Z или тапай в ритм!</p>
+    </a>
+
+    <a class="card territory" href="territory/">
+      <div class="glow"></div>
+      <span class="emoji">⚔️</span>
+      <span class="badge">ИГРАТЬ</span>
+      <h2>Битва за территорию</h2>
+      <p>Завоюй все регионы карты! Атакуй соседей, укрепляй оборону, побеждай ИИ.</p>
+    </a>
+  </div>
+
+  <div class="footer">🕹 batmGAMES · играй прямо в Telegram</div>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  if (tg) { tg.ready(); tg.expand(); }
+</script>
+</body>
+</html>
