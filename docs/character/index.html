@@ -3,322 +3,701 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>👤 Мой персонаж</title>
+<title>👤 Мой персонаж — batmGAMES</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root {
   --bg1: #05070c;
   --bg2: #0a0d12;
-  --bg3: #0f131c;
   --card: #161d2b;
   --accent: #a23cf5;
   --text: #f2f4ff;
   --muted: #8b92b0;
-  --border: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.07);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-html,body { height:100%; overflow:hidden; background:var(--bg1); color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  user-select:none; -webkit-tap-highlight-color:transparent; }
+html, body {
+  height: 100%; width: 100%;
+  background: var(--bg1);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
 
-#wrap { display:flex; flex-direction:column; height:100vh; max-width:480px; margin:0 auto; }
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 480px;
+  margin: 0 auto;
+}
 
-#topbar { display:flex; align-items:center; gap:10px; padding:12px 16px;
-  background:var(--bg2); border-bottom:1px solid var(--border); }
-.back { color:var(--muted); text-decoration:none; font-size:14px; }
-#topbar h1 { font-size:16px; font-weight:800; flex:1; text-align:center; }
-.spacer { width:36px; }
+/* ── Topbar ── */
+#topbar {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 10px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.back-btn {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 20px;
+  padding: 4px 6px;
+  line-height: 1;
+}
+#topbar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+}
+#save-btn {
+  padding: 8px 18px;
+  background: linear-gradient(135deg, var(--accent), #6414c9);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(162,60,245,0.4);
+  transition: transform 0.12s, opacity 0.12s;
+  white-space: nowrap;
+}
+#save-btn:active { transform: scale(0.95); opacity: 0.9; }
+#save-btn.saved {
+  background: linear-gradient(135deg, #22e77c, #0d9b52);
+  box-shadow: 0 4px 16px rgba(34,231,124,0.4);
+}
 
-#canvas-area { flex:1; display:flex; align-items:center; justify-content:center;
-  padding:20px; position:relative; overflow:hidden; }
-#character-canvas { max-width:100%; max-height:100%; }
+/* ── Canvas area ── */
+#canvas-area {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+#char-canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
 
-#controls { background:var(--bg2); border-top:1px solid var(--border);
-  padding:16px; display:flex; flex-direction:column; gap:14px; }
+/* ── Controls ── */
+#controls {
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  touch-action: none;
+}
 
-.control-row { display:flex; flex-direction:column; gap:6px; }
-.control-label { font-size:12px; font-weight:700; color:var(--muted);
-  text-transform:uppercase; letter-spacing:0.05em; }
-.slider-wrap { display:flex; align-items:center; gap:10px; }
-.slider-btn { width:36px; height:36px; border:none; border-radius:999px;
-  background:var(--card); color:var(--text); font-size:18px; font-weight:800;
-  cursor:pointer; transition:transform 0.1s; }
-.slider-btn:active { transform:scale(0.92); }
-.slider-content { flex:1; display:flex; align-items:center; justify-content:center;
-  height:48px; border-radius:12px; background:var(--card);
-  font-size:14px; font-weight:700; transition:transform 0.2s; }
+/* Attribute name row */
+.attr-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  height: 36px;
+  overflow: hidden;
+  position: relative;
+}
+.nav-arrow {
+  font-size: 22px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.nav-arrow:active { color: var(--text); }
+#attr-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  position: relative;
+  transition: opacity 0.15s;
+}
 
-.color-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
-.color-btn { aspect-ratio:1; border:2px solid transparent; border-radius:999px;
-  cursor:pointer; transition:all 0.15s; position:relative; }
-.color-btn.active { border-color:#fff; transform:scale(1.15); }
-.color-btn::after { content:''; position:absolute; inset:0; border-radius:999px;
-  box-shadow:inset 0 2px 8px rgba(0,0,0,0.3); }
+/* Value row */
+.val-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.val-arrow {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s, background 0.12s;
+}
+.val-arrow:active { transform: scale(0.9); background: #222c3d; }
 
-#name-input { width:100%; padding:12px; border:1px solid var(--border);
-  border-radius:12px; background:var(--card); color:var(--text);
-  font:inherit; font-size:15px; }
-#name-input::placeholder { color:var(--muted); }
+#val-display {
+  flex: 1;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  overflow: hidden;
+  position: relative;
+}
 
-#save-btn { width:100%; padding:14px; border:none; border-radius:14px;
-  background:linear-gradient(135deg,var(--accent),#6414c9);
-  color:#fff; font:inherit; font-size:15px; font-weight:800;
-  cursor:pointer; box-shadow:0 6px 20px rgba(162,60,245,0.4);
-  transition:transform 0.1s; }
-#save-btn:active { transform:scale(0.97); }
+/* Color swatch inside val-display */
+.val-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.3);
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.4);
+  flex-shrink: 0;
+}
+.val-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Name input */
+#name-wrap {
+  display: none;
+}
+#name-wrap.active { display: block; }
+#name-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+#name-input::placeholder { color: var(--muted); }
+#name-input:focus { border-color: var(--accent); }
+
+/* Dots indicator */
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.3);
+}
+
+/* Slide animations */
+@keyframes slideInRight { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+@keyframes slideInLeft  { from { opacity:0; transform:translateX(-30px);} to { opacity:1; transform:translateX(0); } }
+@keyframes slideInUp    { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideInDown  { from { opacity:0; transform:translateY(-12px);} to { opacity:1; transform:translateY(0); } }
+.anim-right { animation: slideInRight 0.2s ease both; }
+.anim-left  { animation: slideInLeft  0.2s ease both; }
+.anim-up    { animation: slideInUp    0.18s ease both; }
+.anim-down  { animation: slideInDown  0.18s ease both; }
+
+/* Character float */
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.floating { animation: float 2.8s ease-in-out infinite; }
 </style>
 </head>
 <body>
-<div id="wrap">
+<div id="app">
   <div id="topbar">
-    <a class="back" href="../">⬅</a>
-    <h1>👤 Мой персонаж</h1>
-    <div class="spacer"></div>
+    <a class="back-btn" href="../">←</a>
+    <div id="topbar-title">👤 Мой персонаж</div>
+    <button id="save-btn">💾 Сохранить</button>
   </div>
 
   <div id="canvas-area">
-    <canvas id="character-canvas" width="300" height="400"></canvas>
+    <canvas id="char-canvas"></canvas>
   </div>
 
   <div id="controls">
-    <div class="control-row">
-      <div class="control-label">Ноги</div>
-      <div class="color-grid" id="legs-colors"></div>
+    <!-- attribute navigation (up/down) -->
+    <div class="attr-nav">
+      <span class="nav-arrow" id="attr-up">↑</span>
+      <span id="attr-name">НОГИ</span>
+      <span class="nav-arrow" id="attr-down">↓</span>
     </div>
 
-    <div class="control-row">
-      <div class="control-label">Торс</div>
-      <div class="color-grid" id="torso-colors"></div>
+    <!-- value navigation (left/right) -->
+    <div class="val-nav" id="val-nav">
+      <button class="val-arrow" id="val-prev">‹</button>
+      <div id="val-display"></div>
+      <button class="val-arrow" id="val-next">›</button>
     </div>
 
-    <div class="control-row">
-      <div class="control-label">Руки</div>
-      <div class="color-grid" id="arms-colors"></div>
+    <!-- name input (only for NAME attribute) -->
+    <div id="name-wrap">
+      <input type="text" id="name-input" placeholder="Введи имя персонажа..." maxlength="16">
     </div>
 
-    <div class="control-row">
-      <div class="control-label">Голова</div>
-      <div class="color-grid" id="head-colors"></div>
-    </div>
-
-    <div class="control-row">
-      <div class="control-label">Прическа</div>
-      <div class="slider-wrap">
-        <button class="slider-btn" id="hair-prev">‹</button>
-        <div class="slider-content" id="hair-display">Стандарт</div>
-        <button class="slider-btn" id="hair-next">›</button>
-      </div>
-    </div>
-
-    <div class="control-row">
-      <div class="control-label">Эмоция</div>
-      <div class="slider-wrap">
-        <button class="slider-btn" id="face-prev">‹</button>
-        <div class="slider-content" id="face-display">😊 Улыбка</div>
-        <button class="slider-btn" id="face-next">›</button>
-      </div>
-    </div>
-
-    <div class="control-row">
-      <div class="control-label">Имя персонажа</div>
-      <input type="text" id="name-input" placeholder="Введи имя..." maxlength="16">
-    </div>
-
-    <button id="save-btn">💾 Сохранить персонажа</button>
+    <!-- dots indicator -->
+    <div class="dots" id="dots"></div>
   </div>
 </div>
 
-<script type="module">
+<script>
 const tg = window.Telegram?.WebApp;
 if (tg) { tg.ready(); tg.expand(); }
 
-const canvas = document.getElementById('character-canvas');
-const ctx = canvas.getContext('2d');
-
+// ── Palette & Options ────────────────────────────────────────────
 const COLORS = [
-  '#2d4fd6', '#22c55e', '#ffd23e', '#ff4b4b', '#a23cf5', '#00c2ff',
-  '#f97316', '#ec4899', '#8b5cf6', '#10b981', '#0ea5e9', '#64748b'
+  '#2d4fd6','#22c55e','#ffd23e','#ff4b4b','#a23cf5','#00c2ff',
+  '#f97316','#ec4899','#8b5cf6','#10b981','#ff6b6b','#64748b'
+];
+const HAIR_OPTIONS = [
+  { id:'none',    label:'Без причёски' },
+  { id:'default', label:'Классика' },
+  { id:'spiky',   label:'Ёжик' },
+  { id:'long',    label:'Длинные' },
+];
+const FACE_OPTIONS = [
+  { id:'smile',   label:'😊 Улыбка' },
+  { id:'cool',    label:'😎 Крутой' },
+  { id:'happy',   label:'😄 Весёлый' },
+  { id:'serious', label:'😐 Серьёзный' },
 ];
 
-const HAIR_STYLES = [
-  {id:'none',name:'Без причёски'},
-  {id:'default',name:'Стандарт'},
-  {id:'spiky',name:'Ежик'},
-  {id:'long',name:'Длинные'}
+// ── Attributes definition ────────────────────────────────────────
+const ATTRS = [
+  { key:'legs_color',   label:'НОГИ',     type:'color',   values: COLORS },
+  { key:'torso_color',  label:'ТОРС',     type:'color',   values: COLORS },
+  { key:'arms_color',   label:'РУКИ',     type:'color',   values: COLORS },
+  { key:'head_color',   label:'ГОЛОВА',   type:'color',   values: COLORS },
+  { key:'hair_style',   label:'ПРИЧЕСКА', type:'option',  values: HAIR_OPTIONS },
+  { key:'face_emotion', label:'ЭМОЦИЯ',   type:'option',  values: FACE_OPTIONS },
+  { key:'name',         label:'ИМЯ',      type:'text' },
 ];
 
-const FACES = [
-  {id:'smile',name:'😊 Улыбка'},
-  {id:'cool',name:'😎 Крутой'},
-  {id:'happy',name:'😄 Весёлый'},
-  {id:'serious',name:'😐 Серьёзный'}
-];
-
+// ── State ────────────────────────────────────────────────────────
 let character = {
-  legs_color: '#2d4fd6',
-  torso_color: '#22c55e',
-  arms_color: '#ffd23e',
-  head_color: '#ffd23e',
-  hair_style: 'default',
+  legs_color:   '#2d4fd6',
+  torso_color:  '#22c55e',
+  arms_color:   '#ffd23e',
+  head_color:   '#ffd23e',
+  hair_style:   'default',
   face_emotion: 'smile',
-  name: ''
+  name:         '',
 };
 
-// Загрузить существующего персонажа
 const saved = localStorage.getItem('batm_character');
-if (saved) {
-  try {
-    character = {...character, ...JSON.parse(saved)};
-  } catch(e) {}
+if (saved) { try { character = { ...character, ...JSON.parse(saved) }; } catch(e){} }
+
+let attrIdx = 0; // current attribute index
+
+// ── Canvas setup ─────────────────────────────────────────────────
+const canvas = document.getElementById('char-canvas');
+const ctx    = canvas.getContext('2d');
+const area   = document.getElementById('canvas-area');
+
+function resizeCanvas() {
+  const size = Math.min(area.clientWidth, area.clientHeight, 320);
+  canvas.width  = size;
+  canvas.height = size * 1.35;
 }
-document.getElementById('name-input').value = character.name;
+resizeCanvas();
+new ResizeObserver(resizeCanvas).observe(area);
 
-function roundRect(x,y,w,h,r,fill) {
-  ctx.beginPath();
-  ctx.roundRect(x,y,w,h,r);
-  ctx.fillStyle = fill;
-  ctx.fill();
-}
+// ── Draw character ───────────────────────────────────────────────
+function drawCharacter(glowPart) {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
 
-function drawCharacter() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const cx   = W / 2;
+  const base = H * 0.72;
 
-  const cx = 150, cy = 200;
-  const w = 60, legH = 40, torsoH = 50, armW = 20, armH = 40, headH = 50;
+  // proportions relative to canvas width
+  const bw   = W * 0.36;  // body width
+  const th   = H * 0.26;  // torso height
+  const lh   = H * 0.22;  // leg height
+  const lw   = bw * 0.38; // leg width
+  const aw   = bw * 0.22; // arm width
+  const ah   = th * 0.82; // arm height
+  const hw   = bw * 0.72; // head width
+  const hh   = H * 0.22;  // head height
 
-  // Тень
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';
-  ctx.beginPath();
-  ctx.ellipse(cx, cy+120, 35, 8, 0, 0, Math.PI*2);
-  ctx.fill();
+  const torsoY = base - th;
+  const legY   = base;
+  const armY   = torsoY + th * 0.12;
+  const headY  = torsoY - hh + H * 0.04;
 
-  // Ноги
-  roundRect(cx-w/2+8, cy+torsoH, 20, legH, 6, character.legs_color);
-  roundRect(cx+w/2-28, cy+torsoH, 20, legH, 6, character.legs_color);
+  function glow(part) {
+    if (glowPart !== part) return;
+    ctx.shadowColor = '#fff';
+    ctx.shadowBlur  = 18;
+  }
+  function noGlow() { ctx.shadowBlur = 0; }
 
-  // Торс
-  roundRect(cx-w/2, cy, w, torsoH, 8, character.torso_color);
-
-  // Руки
-  roundRect(cx-w/2-24, cy+8, armW, armH, 6, character.arms_color);
-  roundRect(cx+w/2+4, cy+8, armW, armH, 6, character.arms_color);
-
-  // Голова
-  roundRect(cx-w/2+6, cy-headH+10, w-12, headH, 10, character.head_color);
-
-  // Прическа
-  if (character.hair_style === 'default') {
-    roundRect(cx-w/2+6, cy-headH-5, w-12, 20, 8, '#4a3020');
-  } else if (character.hair_style === 'spiky') {
-    ctx.fillStyle = '#4a3020';
-    for (let i=0; i<5; i++) {
-      ctx.beginPath();
-      ctx.moveTo(cx-20+i*10, cy-headH+8);
-      ctx.lineTo(cx-20+i*10-4, cy-headH-8);
-      ctx.lineTo(cx-20+i*10+4, cy-headH-8);
-      ctx.closePath();
-      ctx.fill();
-    }
-  } else if (character.hair_style === 'long') {
-    roundRect(cx-w/2+6, cy-headH-8, w-12, 30, 8, '#4a3020');
+  function rr(x, y, w, h, r, fill) {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    ctx.fillStyle = fill;
+    ctx.fill();
   }
 
-  // Лицо
-  ctx.fillStyle = '#222';
+  function lighten(hex, amt = 40) {
+    let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    r = Math.min(255, r+amt); g = Math.min(255, g+amt); b = Math.min(255, b+amt);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath(); ctx.ellipse(cx, base + lh + H*0.02, bw*0.65, H*0.03, 0, 0, Math.PI*2); ctx.fill();
+
+  // Legs
+  glow('legs_color');
+  rr(cx - bw/2 + bw*0.06, legY, lw, lh, W*0.04, character.legs_color);
+  rr(cx + bw/2 - lw - bw*0.06, legY, lw, lh, W*0.04, character.legs_color);
+  noGlow();
+
+  // Torso
+  glow('torso_color');
+  rr(cx - bw/2, torsoY, bw, th, W*0.05, character.torso_color);
+  // torso shine
+  ctx.fillStyle = 'rgba(255,255,255,0.07)';
+  ctx.beginPath(); ctx.roundRect(cx - bw/2, torsoY, bw, th*0.4, [W*0.05, W*0.05, 0, 0]); ctx.fill();
+  noGlow();
+
+  // Arms
+  glow('arms_color');
+  rr(cx - bw/2 - aw - W*0.01, armY, aw, ah, W*0.04, character.arms_color);
+  rr(cx + bw/2 + W*0.01,       armY, aw, ah, W*0.04, character.arms_color);
+  noGlow();
+
+  // Head
+  glow('head_color');
+  rr(cx - hw/2, headY, hw, hh, W*0.07, character.head_color);
+  // head shine
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.beginPath(); ctx.ellipse(cx - hw*0.12, headY + hh*0.22, hw*0.18, hh*0.1, -0.4, 0, Math.PI*2); ctx.fill();
+  noGlow();
+
+  // Hair
+  ctx.shadowBlur = 0;
+  const hairColor = lighten(character.head_color, -60);
+  if (character.hair_style === 'default') {
+    rr(cx - hw/2, headY - H*0.015, hw, H*0.05, [W*0.06, W*0.06, 0, 0], hairColor);
+  } else if (character.hair_style === 'spiky') {
+    ctx.fillStyle = hairColor;
+    for (let i = 0; i < 5; i++) {
+      const sx = cx - hw*0.38 + i * hw*0.2;
+      ctx.beginPath();
+      ctx.moveTo(sx, headY + H*0.01);
+      ctx.lineTo(sx - hw*0.09, headY - H*0.055);
+      ctx.lineTo(sx + hw*0.09, headY - H*0.055);
+      ctx.closePath(); ctx.fill();
+    }
+  } else if (character.hair_style === 'long') {
+    rr(cx - hw/2, headY - H*0.02, hw, H*0.08, [W*0.06, W*0.06, 0, 0], hairColor);
+    // side strands
+    rr(cx - hw/2 - W*0.025, headY, W*0.055, H*0.14, W*0.03, hairColor);
+    rr(cx + hw/2 - W*0.03,  headY, W*0.055, H*0.14, W*0.03, hairColor);
+  }
+
+  // Face
+  const eyeY = headY + hh * 0.38;
+  const eyeX1 = cx - hw * 0.22, eyeX2 = cx + hw * 0.22;
+  const eyeR  = W * 0.04;
+
+  // Eyes white
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.ellipse(eyeX1, eyeY, eyeR, eyeR*1.1, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(eyeX2, eyeY, eyeR, eyeR*1.1, 0, 0, Math.PI*2); ctx.fill();
+  // Pupils
+  ctx.fillStyle = '#1a1a2e';
+  ctx.beginPath(); ctx.ellipse(eyeX1+W*0.005, eyeY+H*0.005, eyeR*0.55, eyeR*0.65, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(eyeX2+W*0.005, eyeY+H*0.005, eyeR*0.55, eyeR*0.65, 0, 0, Math.PI*2); ctx.fill();
+  // Shine
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(eyeX1 - W*0.006, eyeY - H*0.008, W*0.012, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(eyeX2 - W*0.006, eyeY - H*0.008, W*0.012, 0, Math.PI*2); ctx.fill();
+
+  // Mouth
+  const mouthY = headY + hh * 0.7;
+  ctx.lineWidth   = W * 0.022;
+  ctx.strokeStyle = lighten(character.head_color, -80);
+  ctx.lineCap = 'round';
+
   if (character.face_emotion === 'smile') {
     ctx.beginPath();
-    ctx.arc(cx-12, cy-30, 3, 0, Math.PI*2);
-    ctx.arc(cx+12, cy-30, 3, 0, Math.PI*2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy-18, 10, 0.2*Math.PI, 0.8*Math.PI);
-    ctx.stroke();
-  } else if (character.face_emotion === 'cool') {
-    roundRect(cx-18, cy-32, 12, 4, 2, '#222');
-    roundRect(cx+6, cy-32, 12, 4, 2, '#222');
-    ctx.beginPath();
-    ctx.moveTo(cx-8, cy-20);
-    ctx.lineTo(cx+8, cy-20);
-    ctx.strokeStyle = '#222';
-    ctx.lineWidth = 2;
+    ctx.arc(cx, mouthY - H*0.01, hw*0.22, 0.1*Math.PI, 0.9*Math.PI);
     ctx.stroke();
   } else if (character.face_emotion === 'happy') {
     ctx.beginPath();
-    ctx.arc(cx-12, cy-30, 4, 0, Math.PI*2);
-    ctx.arc(cx+12, cy-30, 4, 0, Math.PI*2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx, cy-16, 12, 0.1*Math.PI, 0.9*Math.PI);
-    ctx.lineWidth = 2;
+    ctx.arc(cx, mouthY - H*0.015, hw*0.28, 0.05*Math.PI, 0.95*Math.PI);
     ctx.stroke();
-  } else {
-    ctx.fillRect(cx-14, cy-31, 8, 3);
-    ctx.fillRect(cx+6, cy-31, 8, 3);
-    ctx.fillRect(cx-10, cy-20, 20, 2);
+    // rosy cheeks
+    ctx.fillStyle = 'rgba(255,120,120,0.25)';
+    ctx.beginPath(); ctx.ellipse(eyeX1 - W*0.01, mouthY - H*0.02, W*0.055, H*0.025, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(eyeX2 + W*0.01, mouthY - H*0.02, W*0.055, H*0.025, 0, 0, Math.PI*2); ctx.fill();
+  } else if (character.face_emotion === 'serious') {
+    ctx.beginPath();
+    ctx.moveTo(cx - hw*0.22, mouthY);
+    ctx.lineTo(cx + hw*0.22, mouthY);
+    ctx.stroke();
+    // stern brows
+    ctx.lineWidth = W*0.02;
+    ctx.beginPath(); ctx.moveTo(eyeX1-eyeR*1.1, eyeY-eyeR*1.5); ctx.lineTo(eyeX1+eyeR*0.8, eyeY-eyeR*1.1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(eyeX2-eyeR*0.8, eyeY-eyeR*1.1); ctx.lineTo(eyeX2+eyeR*1.1, eyeY-eyeR*1.5); ctx.stroke();
+  } else { // cool
+    // shades
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.beginPath(); ctx.roundRect(eyeX1-eyeR*1.3, eyeY-eyeR*1.1, eyeR*2.6, eyeR*2, W*0.02); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(eyeX2-eyeR*1.3, eyeY-eyeR*1.1, eyeR*2.6, eyeR*2, W*0.02); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+    ctx.beginPath(); ctx.roundRect(eyeX1-eyeR*1.3, eyeY-eyeR*1.1, eyeR*2.6, eyeR*0.7, [W*0.02,W*0.02,0,0]); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(eyeX2-eyeR*1.3, eyeY-eyeR*1.1, eyeR*2.6, eyeR*0.7, [W*0.02,W*0.02,0,0]); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = W*0.01;
+    ctx.beginPath(); ctx.moveTo(eyeX1+eyeR*1.3, eyeY-eyeR*0.1); ctx.lineTo(eyeX2-eyeR*1.3, eyeY-eyeR*0.1); ctx.stroke();
+    // smirk
+    ctx.strokeStyle = lighten(character.head_color, -80); ctx.lineWidth = W*0.022;
+    ctx.beginPath(); ctx.arc(cx+hw*0.08, mouthY-H*0.005, hw*0.14, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+  }
+
+  // Name tag
+  if (character.name) {
+    const nameY = base + lh + H * 0.055;
+    ctx.fillStyle = 'rgba(162,60,245,0.15)';
+    const tw = ctx.measureText(character.name).width;
+    const nw = tw + W*0.16, nh = H*0.05;
+    ctx.beginPath(); ctx.roundRect(cx - nw/2, nameY - nh/2, nw, nh, nh/2); ctx.fill();
+    ctx.fillStyle = '#c97eff';
+    ctx.font = `${Math.round(W*0.072)}px -apple-system,sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(character.name, cx, nameY);
   }
 }
 
-function setupColorPicker(containerId, colorKey) {
-  const container = document.getElementById(containerId);
-  COLORS.forEach(color => {
-    const btn = document.createElement('button');
-    btn.className = 'color-btn';
-    btn.style.background = color;
-    if (character[colorKey] === color) btn.classList.add('active');
-    btn.addEventListener('click', () => {
-      container.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      character[colorKey] = color;
-      drawCharacter();
-    });
-    container.appendChild(btn);
-  });
+// ── Current glow part based on attr ─────────────────────────────
+function glowPartForAttr(attr) {
+  const map = {
+    legs_color: 'legs_color', torso_color: 'torso_color',
+    arms_color: 'arms_color', head_color: 'head_color',
+  };
+  return map[attr.key] || null;
 }
 
-function setupSlider(prevId, nextId, displayId, options, currentKey) {
-  let idx = options.findIndex(o => o.id === character[currentKey]);
-  if (idx < 0) idx = 0;
-
-  const display = document.getElementById(displayId);
-  display.textContent = options[idx].name;
-
-  document.getElementById(prevId).addEventListener('click', () => {
-    idx = (idx - 1 + options.length) % options.length;
-    character[currentKey] = options[idx].id;
-    display.textContent = options[idx].name;
-    drawCharacter();
-  });
-
-  document.getElementById(nextId).addEventListener('click', () => {
-    idx = (idx + 1) % options.length;
-    character[currentKey] = options[idx].id;
-    display.textContent = options[idx].name;
-    drawCharacter();
-  });
+function redraw() {
+  const attr = ATTRS[attrIdx];
+  drawCharacter(glowPartForAttr(attr));
 }
 
-setupColorPicker('legs-colors', 'legs_color');
-setupColorPicker('torso-colors', 'torso_color');
-setupColorPicker('arms-colors', 'arms_color');
-setupColorPicker('head-colors', 'head_color');
-setupSlider('hair-prev', 'hair-next', 'hair-display', HAIR_STYLES, 'hair_style');
-setupSlider('face-prev', 'face-next', 'face-display', FACES, 'face_emotion');
+// ── Dots ─────────────────────────────────────────────────────────
+function buildDots() {
+  const container = document.getElementById('dots');
+  container.innerHTML = '';
+  ATTRS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === attrIdx ? ' active' : '');
+    container.appendChild(d);
+  });
+}
+function updateDots() {
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i === attrIdx));
+}
 
-document.getElementById('save-btn').addEventListener('click', () => {
-  character.name = document.getElementById('name-input').value.trim() || 'Игрок';
+// ── Value display ─────────────────────────────────────────────────
+function currentValueIdx() {
+  const attr = ATTRS[attrIdx];
+  if (attr.type === 'text') return -1;
+  if (attr.type === 'color') return COLORS.indexOf(character[attr.key]);
+  return attr.values.findIndex(v => v.id === character[attr.key]);
+}
 
-  // Сохранить локально
-  localStorage.setItem('batm_character', JSON.stringify(character));
+function renderValDisplay(animClass) {
+  const attr = ATTRS[attrIdx];
+  const disp = document.getElementById('val-display');
+  const nameWrap = document.getElementById('name-wrap');
+  const valNav   = document.getElementById('val-nav');
 
-  // Отправить боту
-  if (tg) {
-    tg.sendData(JSON.stringify(character));
-  } else {
-    alert('✅ Персонаж сохранён! (в localStorage, т.к. не в Telegram)');
+  if (attr.type === 'text') {
+    nameWrap.classList.add('active');
+    valNav.style.display = 'none';
+    document.getElementById('name-input').value = character.name;
+    return;
   }
+  nameWrap.classList.remove('active');
+  valNav.style.display = 'flex';
+
+  disp.innerHTML = '';
+  disp.className = '';
+  if (animClass) {
+    // force reflow for re-trigger
+    void disp.offsetWidth;
+    disp.classList.add(animClass);
+  }
+
+  if (attr.type === 'color') {
+    const swatch = document.createElement('div');
+    swatch.className = 'val-swatch';
+    swatch.style.background = character[attr.key];
+    swatch.style.marginRight = '10px';
+    disp.appendChild(swatch);
+
+    const lbl = document.createElement('span');
+    lbl.className = 'val-label';
+    const idx = currentValueIdx();
+    lbl.textContent = `Цвет ${idx + 1} / ${COLORS.length}`;
+    disp.appendChild(lbl);
+  } else {
+    const opt = attr.values.find(v => v.id === character[attr.key]);
+    const lbl = document.createElement('span');
+    lbl.className = 'val-label';
+    lbl.style.fontSize = '20px';
+    lbl.textContent = opt ? opt.label : '';
+    disp.appendChild(lbl);
+  }
+}
+
+function renderAttrName(animClass) {
+  const el = document.getElementById('attr-name');
+  el.className = '';
+  void el.offsetWidth;
+  if (animClass) el.classList.add(animClass);
+  el.textContent = ATTRS[attrIdx].label;
+}
+
+// ── Navigate attributes (up/down) ────────────────────────────────
+function goAttr(dir) {
+  attrIdx = (attrIdx + dir + ATTRS.length) % ATTRS.length;
+  renderAttrName(dir > 0 ? 'anim-down' : 'anim-up');
+  renderValDisplay(dir > 0 ? 'anim-right' : 'anim-left');
+  updateDots();
+  redraw();
+}
+
+// ── Navigate values (left/right) ─────────────────────────────────
+function goVal(dir) {
+  const attr = ATTRS[attrIdx];
+  if (attr.type === 'text') return;
+
+  const vals = attr.values;
+  const idx  = currentValueIdx();
+  const next = (idx + dir + vals.length) % vals.length;
+
+  if (attr.type === 'color') {
+    character[attr.key] = COLORS[next];
+  } else {
+    character[attr.key] = vals[next].id;
+  }
+
+  renderValDisplay(dir > 0 ? 'anim-right' : 'anim-left');
+  redraw();
+}
+
+// ── Button wiring ─────────────────────────────────────────────────
+document.getElementById('attr-up').addEventListener('click',   () => goAttr(-1));
+document.getElementById('attr-down').addEventListener('click', () => goAttr(1));
+document.getElementById('val-prev').addEventListener('click',  () => goVal(-1));
+document.getElementById('val-next').addEventListener('click',  () => goVal(1));
+
+document.getElementById('name-input').addEventListener('input', e => {
+  character.name = e.target.value;
+  redraw();
 });
 
-drawCharacter();
+// ── Keyboard ─────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp')    { goAttr(-1); e.preventDefault(); }
+  if (e.key === 'ArrowDown')  { goAttr(1);  e.preventDefault(); }
+  if (e.key === 'ArrowLeft')  { goVal(-1);  e.preventDefault(); }
+  if (e.key === 'ArrowRight') { goVal(1);   e.preventDefault(); }
+});
+
+// ── Touch swipe on canvas / controls ─────────────────────────────
+let tx0 = 0, ty0 = 0;
+const swipeTarget = document.getElementById('app');
+
+swipeTarget.addEventListener('touchstart', e => {
+  tx0 = e.touches[0].clientX;
+  ty0 = e.touches[0].clientY;
+}, { passive: true });
+
+swipeTarget.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx0;
+  const dy = e.changedTouches[0].clientY - ty0;
+  if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
+  if (Math.abs(dy) > Math.abs(dx)) {
+    // vertical → attr
+    goAttr(dy > 0 ? 1 : -1);
+  } else {
+    // horizontal → value
+    goVal(dx > 0 ? 1 : -1);
+  }
+}, { passive: true });
+
+// ── Save ──────────────────────────────────────────────────────────
+document.getElementById('save-btn').addEventListener('click', () => {
+  character.name = document.getElementById('name-input').value.trim() || character.name;
+  localStorage.setItem('batm_character', JSON.stringify(character));
+
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '✅ Сохранено';
+  btn.classList.add('saved');
+  setTimeout(() => { btn.textContent = '💾 Сохранить'; btn.classList.remove('saved'); }, 2000);
+
+  if (tg) tg.sendData(JSON.stringify(character));
+});
+
+// ── Canvas float animation ────────────────────────────────────────
+canvas.classList.add('floating');
+
+// ── Init ──────────────────────────────────────────────────────────
+buildDots();
+renderAttrName();
+renderValDisplay();
+redraw();
+
+window.addEventListener('resize', () => { resizeCanvas(); redraw(); });
 </script>
 </body>
 </html>
