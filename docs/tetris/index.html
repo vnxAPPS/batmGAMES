@@ -90,31 +90,47 @@ html, body {
 }
 #next-overlay .stat-lbl { font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; }
 
-/* ── D-pad overlay (auto-hide) ── */
+/* ── D-pad overlay (показывается один раз при старте, исчезает через 5с) ── */
 #dpad {
-  position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+  position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
   display:grid;
-  grid-template-columns:repeat(3,52px); grid-template-rows:repeat(2,52px);
+  /* col: ← | ↓ | →  /  col2 centre = ↻ row above */
+  grid-template-columns:56px 56px 56px;
+  grid-template-rows:56px 56px;
   gap:8px; z-index:15;
-  opacity:1; transition:opacity 0.6s ease;
+  opacity:1;
+  transition:opacity 1s ease;
 }
 #dpad.dpad-hidden { opacity:0; pointer-events:none; }
 .dp {
-  width:52px; height:52px;
-  background:rgba(5,7,12,0.7);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.12);
+  width:56px; height:56px;
+  background:rgba(5,7,12,0.72);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.13);
   border-radius:14px;
   display:flex; align-items:center; justify-content:center;
-  font-size:20px; cursor:pointer;
+  font-size:22px; cursor:pointer;
   transition:transform .1s, background .1s, box-shadow .1s;
   -webkit-tap-highlight-color:transparent;
-  box-shadow:0 2px 12px rgba(0,0,0,0.4);
+  box-shadow:0 2px 14px rgba(0,0,0,0.45);
 }
-.dp:active { transform:scale(.88); background:rgba(255,112,0,0.15); box-shadow:0 0 16px rgba(255,112,0,0.3); }
-#dp-rot { grid-column:2; grid-row:1; color:#ff7000; font-size:16px; font-weight:800;
-  border-color:rgba(255,112,0,0.2); box-shadow:0 0 8px rgba(255,112,0,0.12); }
+.dp:active { transform:scale(.86); background:rgba(255,112,0,0.18); box-shadow:0 0 18px rgba(255,112,0,0.35); }
+
+/* ↻ — row 1 col 2 (центр сверху) */
+#dp-rot   { grid-column:2; grid-row:1; color:#ff7000; font-size:17px; font-weight:900;
+  border-color:rgba(255,112,0,0.25); box-shadow:0 0 10px rgba(255,112,0,0.15); }
+/* ← — row 2 col 1 */
+#dp-left  { grid-column:1; grid-row:2; }
+/* ↓ — row 2 col 2 — ускорение, выделяем цветом */
+#dp-down  { grid-column:2; grid-row:2; font-size:17px; font-weight:900; color:#ffd23e;
+  border-color:rgba(255,210,62,0.25); }
+/* → — row 2 col 3 */
+#dp-right { grid-column:3; grid-row:2; }
+
+/* ↓ — подпись «ускор.» под стрелкой */
+#dp-down { position:relative; flex-direction:column; gap:1px; }
+#dp-down::after { content:'ускор.'; position:absolute; bottom:5px; font-size:7px; font-weight:700; color:rgba(255,210,62,0.7); letter-spacing:.04em; }
 
 /* ── Game overlay (start / game over) ── */
 .overlay {
@@ -235,13 +251,14 @@ function sizeBoard() {
 sizeBoard();
 window.addEventListener('resize', () => { sizeBoard(); drawBoard(); });
 
-// ── D-pad auto-hide ─────────────────────────────────────────────
+// ── D-pad: показать один раз при первом старте, скрыть навсегда через 5с ──
 const dpad = document.getElementById('dpad');
-let dpadTimer;
-function showDpadBriefly(ms = 3000) {
+let dpadShown = false;
+function showDpadOnce() {
+  if (dpadShown) return;
+  dpadShown = true;
   dpad.classList.remove('dpad-hidden');
-  clearTimeout(dpadTimer);
-  dpadTimer = setTimeout(() => dpad.classList.add('dpad-hidden'), ms);
+  setTimeout(() => dpad.classList.add('dpad-hidden'), 5000);
 }
 
 // ── State ──────────────────────────────────────────────────────
@@ -395,7 +412,7 @@ function startGame() {
   spawnPiece();
   drawBoard();
   resetTicker();
-  showDpadBriefly(3000); // show controls for 3s then hide
+  showDpadOnce(); // один раз при первом запуске
 }
 
 function resetTicker() {
@@ -441,7 +458,6 @@ document.addEventListener('keydown', e => {
   if (e.key==='ArrowDown')  { moveDown();   e.preventDefault(); }
   if (e.key==='ArrowUp')    { rotatePiece();e.preventDefault(); }
   if (e.key===' ')          { hardDrop();   e.preventDefault(); }
-  showDpadBriefly(2000);
 });
 
 // D-pad
@@ -453,11 +469,10 @@ let dpDownTimer;
 document.getElementById('dp-down').addEventListener('pointerdown', () => { dpDownTimer = setTimeout(hardDrop, 400); });
 document.getElementById('dp-down').addEventListener('pointerup',   () => clearTimeout(dpDownTimer));
 
-// Swipe on board + tap to show dpad
+// Swipe on board
 let tx=0,ty=0,lastTap=0;
 boardCanvas.addEventListener('touchstart', e=>{
   tx=e.touches[0].clientX; ty=e.touches[0].clientY;
-  showDpadBriefly(2500);
   e.preventDefault();
 },{passive:false});
 boardCanvas.addEventListener('touchend', e=>{
