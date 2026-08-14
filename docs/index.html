@@ -23,55 +23,113 @@
     background: radial-gradient(1200px 600px at 50% -10%, var(--bg2), var(--bg1));
     color: var(--text);
     min-height: 100vh;
-    padding: clamp(16px, 4vw, 24px);
+    padding: clamp(16px, 4vw, 40px);
     display: flex;
     flex-direction: column;
     align-items: center;
   }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    max-width: 1200px;
+    text-align: center;
+    margin-bottom: clamp(20px, 4vw, 40px);
+  }
   .logo {
-    font-size: clamp(24px, 6vw, 32px);
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin-bottom: 6px;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 8px;
   }
   .logo .batm { color: var(--accent); }
   .logo .games { color: var(--text); }
-  .tagline { color: var(--muted); font-size: clamp(13px, 3.5vw, 14px); margin-bottom: 28px; text-align: center; }
+  .tagline {
+    color: var(--muted);
+    font-size: clamp(13px, 2vw, 15px);
+  }
+
+  /* ── Grid ── */
   .grid {
     width: 100%;
-    max-width: 420px;
+    max-width: 1200px;
     display: grid;
-    gap: 14px;
+    gap: clamp(12px, 2vw, 20px);
+
+    /* Mobile: 1 col */
+    grid-template-columns: 1fr;
   }
+
+  /* Tablet: 2 col */
+  @media (min-width: 600px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Desktop: 3 col */
+  @media (min-width: 960px) {
+    .grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* ── Card ── */
   .card {
     position: relative;
-    display: block;
+    display: flex;
+    flex-direction: column;
     text-decoration: none;
     color: var(--text);
     background: linear-gradient(160deg, var(--card), #0f131c);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 20px;
-    padding: 18px;
+    padding: clamp(16px, 3vw, 24px);
     overflow: hidden;
-    transition: transform 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   }
   .card:active { transform: scale(0.97); }
+
   .card .glow {
     position: absolute;
     inset: -40% -20% auto;
     height: 100px;
-    filter: blur(40px);
-    opacity: 0.5;
+    filter: blur(45px);
+    opacity: 0.45;
     pointer-events: none;
+    transition: opacity 0.15s;
   }
-  .card.character .glow { background: var(--accent2); }
-  .card.runner .glow { background: var(--accent); }
-  .card.fnf .glow { background: #a23cf5; }
-  .card.slide9 .glow { background: #00c2ff; }
-  .card.territory .glow { background: #ffa94d; }
-  .card h2 { font-size: clamp(17px, 4.5vw, 19px); font-weight: 800; margin-bottom: 5px; position: relative; }
-  .card p { color: var(--muted); font-size: clamp(12px, 3.2vw, 13px); line-height: 1.5; position: relative; }
-  .emoji { font-size: clamp(32px, 8vw, 38px); margin-bottom: 8px; display: block; position: relative; }
+  .card:hover .glow { opacity: 0.7; }
+
+  .card.character .glow  { background: var(--accent2); }
+  .card.runner    .glow  { background: var(--accent); }
+  .card.fnf       .glow  { background: #a23cf5; }
+  .card.slide9    .glow  { background: #00c2ff; }
+  .card.territory .glow  { background: #ffa94d; }
+  .card.snake     .glow  { background: #22e77c; }
+
+  .emoji {
+    font-size: clamp(34px, 5vw, 44px);
+    margin-bottom: 10px;
+    display: block;
+    position: relative;
+  }
+  .card h2 {
+    font-size: clamp(16px, 2.5vw, 20px);
+    font-weight: 800;
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .card p {
+    color: var(--muted);
+    font-size: clamp(12px, 1.8vw, 13px);
+    line-height: 1.55;
+    position: relative;
+    flex: 1;
+  }
+
   .badge {
     position: absolute;
     top: 14px; right: 14px;
@@ -79,57 +137,87 @@
     font-weight: 700;
     padding: 4px 9px;
     border-radius: 999px;
-    background: rgba(0, 226, 110, 0.12);
-    color: #22e77c;
-    border: 1px solid rgba(34, 231, 124, 0.3);
+    letter-spacing: 0.04em;
   }
-  .footer { margin-top: auto; padding-top: 24px; color: var(--muted); font-size: 11px; text-align: center; }
+  .badge.play  { background: rgba(0,226,110,0.12); color: #22e77c; border: 1px solid rgba(34,231,124,0.3); }
+  .badge.new   { background: rgba(59,158,255,0.15); color: #3b9eff; border: 1px solid rgba(59,158,255,0.35); }
+  .badge.make  { background: rgba(162,60,245,0.15); color: #c97eff; border: 1px solid rgba(162,60,245,0.35); }
+
+  /* Character card spans 2 cols on tablet+ */
+  @media (min-width: 600px) {
+    .card.character { grid-column: span 2; }
+    .card.character .emoji { font-size: 52px; }
+    .card.character h2 { font-size: 22px; }
+  }
+  @media (min-width: 960px) {
+    .card.character { grid-column: span 1; }
+  }
+
+  .footer {
+    margin-top: 32px;
+    color: var(--muted);
+    font-size: 11px;
+    text-align: center;
+    opacity: 0.6;
+  }
 </style>
 </head>
 <body>
-  <div class="logo"><span class="batm">batm</span><span class="games">GAMES</span> 🕹</div>
-  <div class="tagline">Игровая платформа в Telegram — создай персонажа и играй</div>
+  <div class="header">
+    <div class="logo"><span class="batm">batm</span><span class="games">GAMES</span> 🕹</div>
+    <div class="tagline">Игровая платформа в Telegram — создай персонажа и играй</div>
+  </div>
 
   <div class="grid">
+
     <a class="card character" href="character/">
       <div class="glow"></div>
       <span class="emoji">👤</span>
-      <span class="badge">СОЗДАТЬ</span>
+      <span class="badge make">СОЗДАТЬ</span>
       <h2>Мой персонаж</h2>
-      <p>Создай своего героя Roblox-стиль! Он появится во всех играх платформы.</p>
+      <p>Создай своего героя в стиле Roblox! Он появится во всех играх платформы.</p>
     </a>
 
     <a class="card runner" href="runner/">
       <div class="glow"></div>
       <span class="emoji">🏃</span>
-      <span class="badge">ИГРАТЬ</span>
+      <span class="badge play">ИГРАТЬ</span>
       <h2>Roblox Runner</h2>
-      <p>Беги и перепрыгивай кубики! Чем дальше — тем быстрее. Побей свой рекорд.</p>
+      <p>Беги и перепрыгивай кубики! Чем дальше — тем быстрее. Побей рекорд.</p>
+    </a>
+
+    <a class="card snake" href="snake/">
+      <div class="glow"></div>
+      <span class="emoji">🐍</span>
+      <span class="badge new">НОВИНКА</span>
+      <h2>Snake</h2>
+      <p>Классическая змейка! Собирай еду, не врезайся в стены и в себя.</p>
     </a>
 
     <a class="card fnf" href="fnf-beat/">
       <div class="glow"></div>
       <span class="emoji">🎹</span>
-      <span class="badge">ИГРАТЬ</span>
+      <span class="badge play">ИГРАТЬ</span>
       <h2>FNF Beat Battle Solo</h2>
-      <p>Классика: лови 4 стрелки в такт под синт-бит! Тапай по полосе или жми DFJK.</p>
+      <p>Классика: лови 4 стрелки в такт под синт-бит! Тапай или жми DFJK.</p>
     </a>
 
     <a class="card slide9" href="slide9/">
       <div class="glow"></div>
       <span class="emoji">🌀</span>
-      <span class="badge">ИГРАТЬ</span>
+      <span class="badge play">ИГРАТЬ</span>
       <h2>FNF Slidenotefication 9</h2>
-      <p>Битва с ботом 🤖 на сцене: ноты-стрелки разной формы. Жми A–Z или тапай в ритм!</p>
+      <p>Битва с ботом 🤖 на сцене: ноты-стрелки разной формы. Жми A–Z или тапай!</p>
     </a>
 
     <a class="card territory" href="territory/">
       <div class="glow"></div>
       <span class="emoji">⚔️</span>
-      <span class="badge">ИГРАТЬ</span>
+      <span class="badge play">ИГРАТЬ</span>
       <h2>Битва за территорию</h2>
       <p>Завоюй все регионы карты! Атакуй соседей, укрепляй оборону, побеждай ИИ.</p>
     </a>
+
   </div>
 
   <div class="footer">🕹 batmGAMES · играй прямо в Telegram</div>
