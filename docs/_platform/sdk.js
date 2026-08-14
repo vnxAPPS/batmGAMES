@@ -1,4 +1,4 @@
-/**
+﻿/**
  * batmGAMES Platform SDK v2
  * ─────────────────────────────────────────────────────────────────
  * Единая точка доступа к возможностям платформы.
@@ -115,7 +115,7 @@ function toast(message, type = 'info', duration = 2500) {
   }
 
   const styles = {
-    info:    { bg: 'rgba(59,158,255,0.95)',  color: '#fff' },
+    info:    { bg: 'rgba(255,112,0,0.95)',  color: '#fff' },
     success: { bg: 'rgba(34,231,124,0.95)',  color: '#05070c' },
     error:   { bg: 'rgba(255,77,109,0.95)',  color: '#fff' },
     warning: { bg: 'rgba(255,185,56,0.95)',  color: '#05070c' },
@@ -165,23 +165,23 @@ function createBackButton(container, href = '../') {
         width: 36px; height: 36px;
         text-decoration: none;
         border-radius: 10px;
-        background: rgba(59,158,255,0.12);
-        border: 1px solid rgba(59,158,255,0.35);
-        box-shadow: 0 0 10px rgba(59,158,255,0.25),inset 0 0 8px rgba(59,158,255,0.08);
+        background: rgba(255,112,0,0.12);
+        border: 1px solid rgba(255,112,0,0.35);
+        box-shadow: 0 0 10px rgba(255,112,0,0.25),inset 0 0 8px rgba(255,112,0,0.08);
         transition: all 0.15s;
         flex-shrink: 0;
       }
       .batm-back-btn:active {
         transform: scale(0.92);
-        box-shadow: 0 0 18px rgba(59,158,255,0.5),inset 0 0 12px rgba(59,158,255,0.15);
+        box-shadow: 0 0 18px rgba(255,112,0,0.5),inset 0 0 12px rgba(255,112,0,0.15);
       }
       .batm-back-arrow {
         display: block;
         width: 14px; height: 14px;
-        border-left: 2.5px solid #3b9eff;
-        border-bottom: 2.5px solid #3b9eff;
+        border-left: 2.5px solid #ff7000;
+        border-bottom: 2.5px solid #ff7000;
         transform: rotate(45deg) translateX(2px);
-        filter: drop-shadow(0 0 4px #3b9eff);
+        filter: drop-shadow(0 0 4px #ff7000);
       }
     `;
     document.head.appendChild(style);

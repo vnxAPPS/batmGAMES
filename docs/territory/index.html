@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -12,7 +12,7 @@
   --border: rgba(255,255,255,0.08);
   --text: #f2f4ff;
   --muted: #8b92b0;
-  --blue: #3b9eff;
+  --blue: #ff7000;
   --red: #ff4b4b;
   --green: #22e77c;
   --neutral: #555c7a;
@@ -32,24 +32,24 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   height: 36px;
   text-decoration: none;
   border-radius: 10px;
-  background: rgba(59,158,255,0.12);
-  border: 1px solid rgba(59,158,255,0.35);
-  box-shadow: 0 0 10px rgba(59,158,255,0.25), inset 0 0 8px rgba(59,158,255,0.08);
+  background: rgba(255,112,0,0.12);
+  border: 1px solid rgba(255,112,0,0.35);
+  box-shadow: 0 0 10px rgba(255,112,0,0.25), inset 0 0 8px rgba(255,112,0,0.08);
   transition: all 0.15s;
   flex-shrink: 0;
 }
 .back-btn:active {
   transform: scale(0.92);
-  box-shadow: 0 0 18px rgba(59,158,255,0.5), inset 0 0 12px rgba(59,158,255,0.15);
+  box-shadow: 0 0 18px rgba(255,112,0,0.5), inset 0 0 12px rgba(255,112,0,0.15);
 }
 .back-arrow {
   display: block;
   width: 14px;
   height: 14px;
-  border-left: 2.5px solid #3b9eff;
-  border-bottom: 2.5px solid #3b9eff;
+  border-left: 2.5px solid #ff7000;
+  border-bottom: 2.5px solid #ff7000;
   transform: rotate(45deg) translateX(2px);
-  filter: drop-shadow(0 0 4px #3b9eff);
+  filter: drop-shadow(0 0 4px #ff7000);
 }
 #topbar h1 { font-size:14px; font-weight:800; flex:1; text-align:center; }
 #turn-info { font-size:11px; color:var(--muted); }
@@ -72,7 +72,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 .btn { flex:1; padding:10px; border:none; border-radius:12px; font:inherit;
   font-weight:800; font-size:13px; cursor:pointer; color:#fff; }
 .btn-attack { background:linear-gradient(135deg,#ff4b4b,#c42020); }
-.btn-reinforce { background:linear-gradient(135deg,#3b9eff,#1a6fc4); }
+.btn-reinforce { background:linear-gradient(135deg,#ff7000,#1a6fc4); }
 .btn-cancel { background:rgba(255,255,255,0.08); color:var(--muted); flex:0 0 auto; padding:10px 16px; }
 #log { position:absolute; top:8px; left:50%; transform:translateX(-50%);
   background:rgba(20,22,38,0.88); backdrop-filter:blur(6px);
@@ -185,7 +185,7 @@ const CONTINENT = [
 
 // ── Состояние игры ──────────────────────────────────────────────────────────
 const PLAYERS = [
-  { id:0, name:"Ты",      color:"#3b9eff", darkColor:"#1a5ca8", isHuman:true  },
+  { id:0, name:"Ты",      color:"#ff7000", darkColor:"#1a5ca8", isHuman:true  },
   { id:1, name:"Красный", color:"#ff4b4b", darkColor:"#a82020", isHuman:false },
   { id:2, name:"Зелёный", color:"#22e77c", darkColor:"#0f9d58", isHuman:false },
 ];
@@ -230,7 +230,7 @@ function draw() {
   ctx.fillStyle = "#1e2235";
   ctx.fillRect(0, 0, W, H);
   // океан — точки
-  ctx.fillStyle = "rgba(59,158,255,0.08)";
+  ctx.fillStyle = "rgba(255,112,0,0.08)";
   for (let xi = 0; xi < W; xi += 40) for (let yi = 0; yi < H; yi += 40)
     { ctx.beginPath(); ctx.arc(xi+20, yi+20, 6, 0, Math.PI*2); ctx.fill(); }
 

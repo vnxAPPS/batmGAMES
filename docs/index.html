@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -11,7 +11,7 @@
     --bg2: #0a0d12;
     --bg3: #0f131c;
     --card: #161d2b;
-    --accent: #3b9eff;
+    --accent: #ff7000;
     --accent2: #a23cf5;
     --text: #f2f4ff;
     --muted: #8b92b0;
@@ -37,14 +37,34 @@
     margin-bottom: clamp(20px, 4vw, 40px);
   }
   .logo {
-    font-size: clamp(28px, 5vw, 48px);
-    font-weight: 900;
-    letter-spacing: -0.03em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.18em;
     line-height: 1;
     margin-bottom: 8px;
   }
-  .logo .batm { color: var(--accent); }
-  .logo .games { color: var(--text); }
+  .logo .batm {
+    font-size: clamp(20px, 3.8vw, 36px);
+    font-weight: 900;
+    font-style: italic;
+    color: #ff7000;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 18px rgba(255,112,0,0.55), 0 0 40px rgba(255,112,0,0.2);
+  }
+  .logo .games {
+    font-size: clamp(28px, 5.4vw, 52px);
+    font-weight: 900;
+    font-style: italic;
+    color: #ffffff;
+    letter-spacing: -0.03em;
+    text-shadow: 0 0 24px rgba(255,255,255,0.18), 0 2px 8px rgba(0,0,0,0.5);
+  }
+  .logo .gamepad {
+    font-size: clamp(22px, 3.8vw, 38px);
+    font-style: normal;
+    filter: drop-shadow(0 0 6px rgba(255,112,0,0.7));
+    margin-left: 0.1em;
+  }
   .tagline {
     color: var(--muted);
     font-size: clamp(13px, 2vw, 15px);
@@ -108,7 +128,7 @@
   .card.fnf       .glow  { background: #a23cf5; }
   .card.slide9    .glow  { background: #00c2ff; }
   .card.territory .glow  { background: #ffa94d; }
-  .card.tetris .glow  { background: #3b9eff; }
+  .card.tetris .glow  { background: #ff7000; }
 
   .emoji {
     font-size: clamp(34px, 5vw, 44px);
@@ -140,7 +160,7 @@
     letter-spacing: 0.04em;
   }
   .badge.play  { background: rgba(0,226,110,0.12); color: #22e77c; border: 1px solid rgba(34,231,124,0.3); }
-  .badge.new   { background: rgba(59,158,255,0.15); color: #3b9eff; border: 1px solid rgba(59,158,255,0.35); }
+  .badge.new   { background: rgba(255,112,0,0.15); color: #ff7000; border: 1px solid rgba(255,112,0,0.35); }
   .badge.make  { background: rgba(162,60,245,0.15); color: #c97eff; border: 1px solid rgba(162,60,245,0.35); }
 
   /* Character card spans 2 cols on tablet+ */
@@ -164,7 +184,7 @@
 </head>
 <body>
   <div class="header">
-    <div class="logo"><span class="batm">batm</span><span class="games">GAMES</span> 🕹</div>
+    <div class="logo"><span class="batm">batm</span><span class="games">GAMES</span><span class="gamepad">🎮</span></div>
     <div class="tagline">Игровая платформа в Telegram — создай персонажа и играй</div>
   </div>
 
