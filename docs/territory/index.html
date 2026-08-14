@@ -24,7 +24,33 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 #wrap { display:flex; flex-direction:column; height:100vh; max-width:480px; margin:0 auto; }
 #topbar { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--panel);
   border-bottom:1px solid var(--border); flex-shrink:0; }
-.back { color:var(--muted); text-decoration:none; font-size:13px; }
+.back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  text-decoration: none;
+  border-radius: 10px;
+  background: rgba(59,158,255,0.12);
+  border: 1px solid rgba(59,158,255,0.35);
+  box-shadow: 0 0 10px rgba(59,158,255,0.25), inset 0 0 8px rgba(59,158,255,0.08);
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.back-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 0 18px rgba(59,158,255,0.5), inset 0 0 12px rgba(59,158,255,0.15);
+}
+.back-arrow {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-left: 2.5px solid #3b9eff;
+  border-bottom: 2.5px solid #3b9eff;
+  transform: rotate(45deg) translateX(2px);
+  filter: drop-shadow(0 0 4px #3b9eff);
+}
 #topbar h1 { font-size:14px; font-weight:800; flex:1; text-align:center; }
 #turn-info { font-size:11px; color:var(--muted); }
 #bar-wrap { padding:6px 12px; background:var(--panel); border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -72,7 +98,7 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
 <body>
 <div id="wrap">
   <div id="topbar">
-    <a class="back" href="../">⬅</a>
+    <a class="back-btn" href="../"><span class="back-arrow"></span></a>
     <h1>⚔️ Битва за территорию</h1>
     <span id="turn-info">Ход 1</span>
   </div>

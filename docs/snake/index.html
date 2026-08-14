@@ -40,11 +40,31 @@
     flex-shrink: 0;
   }
   .back-btn {
-    color: var(--muted);
-    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     text-decoration: none;
-    line-height: 1;
-    padding: 4px 8px;
+    border-radius: 10px;
+    background: rgba(59,158,255,0.12);
+    border: 1px solid rgba(59,158,255,0.35);
+    box-shadow: 0 0 10px rgba(59,158,255,0.25), inset 0 0 8px rgba(59,158,255,0.08);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .back-btn:active {
+    transform: scale(0.92);
+    box-shadow: 0 0 18px rgba(59,158,255,0.5), inset 0 0 12px rgba(59,158,255,0.15);
+  }
+  .back-arrow {
+    display: block;
+    width: 14px;
+    height: 14px;
+    border-left: 2.5px solid #3b9eff;
+    border-bottom: 2.5px solid #3b9eff;
+    transform: rotate(45deg) translateX(2px);
+    filter: drop-shadow(0 0 4px #3b9eff);
   }
   .title-block { text-align: center; }
   .game-title { font-size: 18px; font-weight: 800; }
@@ -135,7 +155,7 @@
 <body>
 
 <div class="topbar">
-  <a class="back-btn" href="../">←</a>
+  <a class="back-btn" href="../"><span class="back-arrow"></span></a>
   <div class="title-block">
     <div class="game-title">🐍 Snake</div>
     <div class="game-sub">batmGAMES</div>
