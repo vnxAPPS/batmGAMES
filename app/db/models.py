@@ -51,7 +51,7 @@ class GameRecord(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, index=True)
     game_slug: Mapped[str] = mapped_column(Text, index=True)  # "runner", "fnf-beat", etc.
     score: Mapped[int] = mapped_column(BigInteger)
-    metadata: Mapped[dict[str, Any] | None] = mapped_column(JSONB)  # доп. данные игры
+    extra_data: Mapped[dict[str, Any] | None] = mapped_column(JSONB)  # доп. данные игры
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
