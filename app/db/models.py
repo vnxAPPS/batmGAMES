@@ -3,8 +3,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, DateTime, Text, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import BigInteger, DateTime, JSON, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -23,7 +22,7 @@ class User(Base):
     last_name: Mapped[str | None] = mapped_column(Text)
 
     # Персонаж игрока
-    character_data: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    character_data: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     # {
     #   "name": "BatmBoy",
     #   "legs_color": "#2d4fd6",
@@ -51,7 +50,7 @@ class GameRecord(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, index=True)
     game_slug: Mapped[str] = mapped_column(Text, index=True)  # "runner", "fnf-beat", etc.
     score: Mapped[int] = mapped_column(BigInteger)
-    extra_data: Mapped[dict[str, Any] | None] = mapped_column(JSONB)  # доп. данные игры
+    extra_data: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # доп. данные игры
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
