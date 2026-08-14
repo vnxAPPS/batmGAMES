@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/batmgames"
 
     # Games
-    GAMES_BASE_URL: str = "https://vnxapps.github.io/batmGAMES/games"
+    GAMES_BASE_URL: str = "https://vnxapps.github.io/batmGAMES"
 
     # Paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
