@@ -210,7 +210,7 @@ function reveal(r,c){
     firstClick=false;placeMinesAround(r,c);
   }
   cell.revealed=true;revealed++;
-  if(cell.mine){gameOver=true;revealAll();endGame(false);return;}
+  if(cell.mine){gameOver=true;endGame(false);return;}
   score++;
   if(cell.count===0){
     for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)reveal(r+dr,c+dc);
@@ -287,16 +287,35 @@ function revealAll(){
 function endGame(won){
   gameOver=true;
   if(won&&score>best[mode]){best[mode]=score;localStorage.setItem("minesweeper_best",JSON.stringify(best));}
-  if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred(won?"success":"error");
-  const ov=document.getElementById("overlay");
-  ov.querySelector(".ov-emoji").textContent=won?"🏆":"💥";
-  ov.querySelector(".ov-title").textContent=won?"Победа!":"Взрыв!";
-  ov.querySelector(".ov-sub").textContent=won
-    ?`Счёт: ${score} · Рекорд: ${best[mode]}`
-    :`Попался на мину! Счёт: ${score}`;
-  ov.querySelector(".mode-selector").style.display="none";
-  ov.querySelector("#start-btn").textContent="ЕЩЁ РАЗ";
-  ov.classList.remove("hidden");
+
+  // Анимация взрыва всех мин
+  const mines=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(cells[r][c].mine)mines.push({r,c});
+
+  let idx=0;
+  const explodeInterval=setInterval(()=>{
+    if(idx>=mines.length){
+      clearInterval(explodeInterval);
+      // Показать оверлей после анимации
+      if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred(won?"success":"error");
+      const ov=document.getElementById("overlay");
+      ov.querySelector(".ov-emoji").textContent=won?"🏆":"💥";
+      ov.querySelector(".ov-title").textContent=won?"Победа!":"Взрыв!";
+      ov.querySelector(".ov-sub").textContent=won
+        ?`Счёт: ${score} · Рекорд: ${best[mode]}`
+        :`Попался на мину! Счёт: ${score}`;
+      ov.querySelector(".mode-selector").style.display="none";
+      ov.querySelector("#start-btn").textContent="ЕЩЁ РАЗ";
+      ov.classList.remove("hidden");
+      return;
+    }
+
+    const{r,c}=mines[idx];
+    cells[r][c].revealed=true;
+    renderBoard();
+    if(tg?.HapticFeedback&&idx%3===0)tg.HapticFeedback.impactOccurred("light");
+    idx++;
+  },won?60:45);
 }
 
 function updateUI(){
