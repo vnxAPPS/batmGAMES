@@ -148,19 +148,23 @@ html, body {
 .play-btn  {
   margin-top:8px; padding:14px 44px;
   background:linear-gradient(135deg,#ff7000 0%,#ff4500 100%);
-  color:#fff; border:none; border-radius:60% 40% 50% 50%;
+  color:#fff; border:none; border-radius:999px;
   font-size:16px; font-weight:800; cursor:pointer; letter-spacing:.04em;
   box-shadow:0 4px 24px rgba(255,112,0,0.45), 0 0 0 1px rgba(255,112,0,0.3);
-  filter:url(#gooey);
-  animation:blob 3s ease-in-out infinite;
-  transition:transform .12s, box-shadow .12s;
+  transition:transform .12s, box-shadow .12s, filter .3s;
 }
-.play-btn:active { transform:scale(0.96); box-shadow:0 2px 12px rgba(255,112,0,0.6); animation-play-state:paused; }
+.play-btn:hover{filter:url(#gooey);animation:blob 2s ease-in-out infinite;}
+.play-btn:active { transform:scale(0.96); box-shadow:0 2px 12px rgba(255,112,0,0.6); filter:url(#gooey); animation:blob-press .4s ease-out forwards; }
 @keyframes blob{
   0%,100%{border-radius:60% 40% 50% 50%;}
   25%{border-radius:40% 60% 55% 45%;}
   50%{border-radius:50% 50% 40% 60%;}
   75%{border-radius:55% 45% 60% 40%;}
+}
+@keyframes blob-press{
+  0%{border-radius:999px;}
+  50%{border-radius:45% 55% 50% 50%;}
+  100%{border-radius:50% 50% 45% 55%;}
 }
 </style>
 </head>
