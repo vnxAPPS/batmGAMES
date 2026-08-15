@@ -148,15 +148,32 @@ html, body {
 .play-btn  {
   margin-top:8px; padding:14px 44px;
   background:linear-gradient(135deg,#ff7000 0%,#ff4500 100%);
-  color:#fff; border:none; border-radius:999px;
+  color:#fff; border:none; border-radius:60% 40% 50% 50%;
   font-size:16px; font-weight:800; cursor:pointer; letter-spacing:.04em;
   box-shadow:0 4px 24px rgba(255,112,0,0.45), 0 0 0 1px rgba(255,112,0,0.3);
+  filter:url(#gooey);
+  animation:blob 3s ease-in-out infinite;
   transition:transform .12s, box-shadow .12s;
 }
-.play-btn:active { transform:scale(0.96); box-shadow:0 2px 12px rgba(255,112,0,0.6); }
+.play-btn:active { transform:scale(0.96); box-shadow:0 2px 12px rgba(255,112,0,0.6); animation-play-state:paused; }
+@keyframes blob{
+  0%,100%{border-radius:60% 40% 50% 50%;}
+  25%{border-radius:40% 60% 55% 45%;}
+  50%{border-radius:50% 50% 40% 60%;}
+  75%{border-radius:55% 45% 60% 40%;}
+}
 </style>
 </head>
 <body>
+<svg style="position:absolute;width:0;height:0;visibility:hidden">
+  <defs>
+    <filter id="gooey">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo"/>
+      <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+    </filter>
+  </defs>
+</svg>
 <div id="app">
   <div id="topbar">
     <a class="back-btn" href="../"><span class="back-arrow"></span></a>

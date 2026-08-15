@@ -132,13 +132,22 @@
     background: var(--accent);
     color: #05070c;
     border: none;
-    border-radius: 999px;
+    border-radius: 60% 40% 50% 50%;
     font-size: 16px;
     font-weight: 800;
     cursor: pointer;
     letter-spacing: 0.02em;
+    filter:url(#gooey);
+    animation:blob 3s ease-in-out infinite;
+    transition:transform .12s, opacity .12s;
   }
-  .play-btn:active { opacity: 0.85; transform: scale(0.97); }
+  .play-btn:active { opacity: 0.85; transform: scale(0.97); animation-play-state:paused; }
+  @keyframes blob{
+    0%,100%{border-radius:60% 40% 50% 50%;}
+    25%{border-radius:40% 60% 55% 45%;}
+    50%{border-radius:50% 50% 40% 60%;}
+    75%{border-radius:55% 45% 60% 40%;}
+  }
 
   /* ── D-pad (mobile swipe area label) ── */
   .hint {
@@ -153,6 +162,15 @@
 </style>
 </head>
 <body>
+<svg style="position:absolute;width:0;height:0;visibility:hidden">
+  <defs>
+    <filter id="gooey">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo"/>
+      <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+    </filter>
+  </defs>
+</svg>
 
 <div class="topbar">
   <a class="back-btn" href="../"><span class="back-arrow"></span></a>
