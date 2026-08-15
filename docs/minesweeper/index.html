@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>💣 Сапёр — batmGAMES</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg1:#05070c; --bg2:#0a0d12; --card:#161d2b;
+  --text:#f2f4ff; --muted:#8b92b0; --border:rgba(255,255,255,0.07);
+  --accent:#ff7000; --green:#22e77c; --red:#ff4b4b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;background:var(--bg1);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;}
+#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;}
+
+/* ── Topbar ── */
+#topbar{display:flex;align-items:center;padding:8px 14px;gap:10px;
+  background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.back-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+  text-decoration:none;border-radius:10px;background:rgba(255,112,0,0.12);
+  border:1px solid rgba(255,112,0,0.35);box-shadow:0 0 10px rgba(255,112,0,0.25);
+  transition:all 0.15s;flex-shrink:0;}
+.back-btn:active{transform:scale(0.92);}
+.back-arrow{display:block;width:14px;height:14px;
+  border-left:2.5px solid #ff7000;border-bottom:2.5px solid #ff7000;
+  transform:rotate(45deg) translateX(2px);filter:drop-shadow(0 0 4px #ff7000);}
+#topbar-title{flex:1;text-align:center;font-size:15px;font-weight:800;}
+
+/* ── Stats row ── */
+#stats-row{display:flex;gap:8px;padding:10px 14px;flex-shrink:0;}
+.stat-box{flex:1;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;
+  align-items:center;gap:2px;}
+.stat-lbl{font-size:9px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.07em;}
+.stat-val{font-size:20px;font-weight:900;color:var(--accent);line-height:1.1;}
+#mode-btn{padding:0 18px;background:rgba(255,112,0,0.12);
+  border:1px solid rgba(255,112,0,0.3);border-radius:12px;
+  color:var(--accent);font-size:12px;font-weight:800;cursor:pointer;
+  transition:all .15s;white-space:nowrap;align-self:stretch;
+  display:flex;align-items:center;justify-content:center;}
+#mode-btn:active{background:rgba(255,112,0,0.25);transform:scale(.96);}
+
+/* ── Board wrap ── */
+#board-wrap{flex:1;display:flex;align-items:center;justify-content:center;
+  padding:8px;overflow:hidden;position:relative;}
+#board{display:grid;gap:2px;touch-action:none;position:relative;}
+.cell{aspect-ratio:1;background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:clamp(12px,3vw,18px);
+  transition:all .08s;cursor:pointer;position:relative;}
+.cell:active{transform:scale(0.92);}
+.cell.revealed{background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.05);
+  cursor:default;}
+.cell.revealed:active{transform:none;}
+.cell.mine{background:linear-gradient(135deg,#ff4b4b,#c42020);
+  box-shadow:0 0 12px rgba(255,75,75,0.5);}
+.cell.flag{background:rgba(255,112,0,0.15);border-color:rgba(255,112,0,0.4);}
+.cell.n1{color:#3b9eff;} .cell.n2{color:#22e77c;} .cell.n3{color:#ff7000;}
+.cell.n4{color:#a23cf5;} .cell.n5{color:#ff4b4b;} .cell.n6{color:#00c2ff;}
+.cell.n7{color:#ffd23e;} .cell.n8{color:#ff6b6b;}
+
+/* ── Overlay ── */
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+  background:rgba(5,7,12,0.88);backdrop-filter:blur(8px);
+  text-align:center;padding:24px;z-index:30;}
+.overlay.hidden{display:none;}
+.ov-emoji{font-size:52px;line-height:1;}
+.ov-title{font-size:24px;font-weight:900;}
+.ov-sub{font-size:13px;color:var(--muted);text-align:center;
+  padding:0 24px;line-height:1.5;max-width:320px;}
+.mode-selector{display:flex;gap:10px;flex-direction:column;width:100%;max-width:280px;}
+.mode-card{padding:14px 20px;background:var(--card);border:2px solid var(--border);
+  border-radius:14px;cursor:pointer;transition:all .15s;
+  display:flex;flex-direction:column;gap:4px;}
+.mode-card:active{transform:scale(0.97);}
+.mode-card.selected{border-color:var(--accent);background:rgba(255,112,0,0.08);}
+.mode-card-title{font-size:16px;font-weight:800;color:var(--text);}
+.mode-card-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+.play-btn{margin-top:8px;padding:14px 44px;
+  background:linear-gradient(135deg,var(--accent),#ff4500);
+  color:#fff;border:none;border-radius:999px;
+  font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.04em;
+  box-shadow:0 4px 24px rgba(255,112,0,0.45);transition:transform .12s;}
+.play-btn:active{transform:scale(0.96);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <a class="back-btn" href="../"><span class="back-arrow"></span></a>
+    <div id="topbar-title">💣 Сапёр</div>
+  </div>
+
+  <div id="stats-row">
+    <div class="stat-box">
+      <span class="stat-lbl">Мины</span>
+      <span class="stat-val" id="mines-val">10</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-lbl">Счёт</span>
+      <span class="stat-val" id="score-val">0</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-lbl">Рекорд</span>
+      <span class="stat-val" id="best-val">0</span>
+    </div>
+    <button id="mode-btn">↺ Режим</button>
+  </div>
+
+  <div id="board-wrap">
+    <div id="board"></div>
+
+    <div class="overlay" id="overlay">
+      <div class="ov-emoji">💣</div>
+      <div class="ov-title">Сапёр</div>
+      <div class="ov-sub">Открывай клетки, избегай мин. Долгий тап — флажок.</div>
+      <div class="mode-selector">
+        <div class="mode-card selected" data-mode="classic">
+          <div class="mode-card-title">🎯 Классика</div>
+          <div class="mode-card-desc">9×9, 10 мин. Открой все безопасные клетки.</div>
+        </div>
+        <div class="mode-card" data-mode="infinite">
+          <div class="mode-card-title">♾️ Бесконечное поле</div>
+          <div class="mode-card-desc">Процедурная генерация. Набирай очки — поле растёт!</div>
+        </div>
+      </div>
+      <button class="play-btn" id="start-btn">ИГРАТЬ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
+
+let mode="classic",cols,rows,mineCount,cells,revealed,flagged,gameOver,firstClick,score;
+let best={classic:0,infinite:0};
+try{const s=localStorage.getItem("minesweeper_best");if(s)best=JSON.parse(s);}catch(e){}
+
+function initGame(){
+  if(mode==="classic"){cols=9;rows=9;mineCount=10;}
+  else{cols=8;rows=8;mineCount=10;}
+  cells=Array(rows).fill(0).map(()=>Array(cols).fill(0).map(()=>({mine:false,count:0,revealed:false,flagged:false})));
+  revealed=0;flagged=0;gameOver=false;firstClick=true;score=0;
+  if(mode==="infinite")placeMines();
+  updateUI();buildBoard();
+}
+
+function placeMines(){
+  let placed=0;
+  while(placed<mineCount){
+    const r=Math.floor(Math.random()*rows),c=Math.floor(Math.random()*cols);
+    if(!cells[r][c].mine){cells[r][c].mine=true;placed++;}
+  }
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if(cells[r][c].mine)continue;
+    let cnt=0;
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&cells[nr][nc].mine)cnt++;
+    }
+    cells[r][c].count=cnt;
+  }
+}
+
+function buildBoard(){
+  const board=document.getElementById("board");
+  board.innerHTML="";
+  const wrap=document.getElementById("board-wrap");
+  const avail=Math.min(wrap.clientWidth,wrap.clientHeight)-16;
+  const cellSize=Math.floor((avail-2*(cols-1))/cols);
+  board.style.gridTemplateColumns=`repeat(${cols},${cellSize}px)`;
+  board.style.gridTemplateRows=`repeat(${rows},${cellSize}px)`;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const el=document.createElement("div");
+    el.className="cell";
+    el.dataset.r=r;el.dataset.c=c;
+    board.appendChild(el);
+  }
+  renderBoard();
+}
+
+function renderBoard(){
+  const board=document.getElementById("board");
+  Array.from(board.children).forEach((el,i)=>{
+    const r=Math.floor(i/cols),c=i%cols;
+    const cell=cells[r][c];
+    el.className="cell";
+    if(cell.revealed){
+      el.classList.add("revealed");
+      if(cell.mine){el.classList.add("mine");el.textContent="💣";}
+      else if(cell.count>0){el.classList.add("n"+cell.count);el.textContent=cell.count;}
+    }else if(cell.flagged){el.classList.add("flag");el.textContent="🚩";}
+    else{el.textContent="";}
+  });
+}
+
+function reveal(r,c){
+  if(r<0||r>=rows||c<0||c>=cols)return;
+  const cell=cells[r][c];
+  if(cell.revealed||cell.flagged)return;
+  if(firstClick&&mode==="classic"){
+    firstClick=false;placeMinesAround(r,c);
+  }
+  cell.revealed=true;revealed++;
+  if(cell.mine){gameOver=true;revealAll();endGame(false);return;}
+  score++;
+  if(cell.count===0){
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)reveal(r+dr,c+dc);
+  }
+  renderBoard();updateUI();
+  if(mode==="classic"){
+    const safe=rows*cols-mineCount;
+    if(revealed>=safe){gameOver=true;endGame(true);}
+  }else if(revealed>0&&revealed%15===0){expandInfinite();}
+}
+
+function placeMinesAround(ar,ac){
+  const safe=new Set();
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=ar+dr,nc=ac+dc;
+    if(nr>=0&&nr<rows&&nc>=0&&nc<cols)safe.add(nr*cols+nc);
+  }
+  let placed=0;
+  while(placed<mineCount){
+    const r=Math.floor(Math.random()*rows),c=Math.floor(Math.random()*cols);
+    if(!safe.has(r*cols+c)&&!cells[r][c].mine){cells[r][c].mine=true;placed++;}
+  }
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if(cells[r][c].mine)continue;
+    let cnt=0;
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&cells[nr][nc].mine)cnt++;
+    }
+    cells[r][c].count=cnt;
+  }
+}
+
+function expandInfinite(){
+  const newCols=cols+2,newRows=rows+2;
+  const newCells=Array(newRows).fill(0).map(()=>Array(newCols).fill(0).map(()=>({mine:false,count:0,revealed:false,flagged:false})));
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)newCells[r+1][c+1]=cells[r][c];
+  cells=newCells;cols=newCols;rows=newRows;
+  const edge=[];
+  for(let c=0;c<cols;c++){edge.push([0,c]);edge.push([rows-1,c]);}
+  for(let r=1;r<rows-1;r++){edge.push([r,0]);edge.push([r,cols-1]);}
+  const toMine=Math.min(5,Math.floor(edge.length*0.15));
+  for(let i=0;i<toMine;i++){
+    const idx=Math.floor(Math.random()*edge.length);
+    const[r,c]=edge.splice(idx,1)[0];
+    cells[r][c].mine=true;mineCount++;
+  }
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    if(cells[r][c].mine)continue;
+    let cnt=0;
+    for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+      const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&cells[nr][nc].mine)cnt++;
+    }
+    cells[r][c].count=cnt;
+  }
+  buildBoard();
+}
+
+function toggleFlag(r,c){
+  if(gameOver)return;
+  const cell=cells[r][c];
+  if(cell.revealed)return;
+  cell.flagged=!cell.flagged;
+  flagged+=cell.flagged?1:-1;
+  renderBoard();updateUI();
+}
+
+function revealAll(){
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)cells[r][c].revealed=true;
+  renderBoard();
+}
+
+function endGame(won){
+  gameOver=true;
+  if(won&&score>best[mode]){best[mode]=score;localStorage.setItem("minesweeper_best",JSON.stringify(best));}
+  if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred(won?"success":"error");
+  const ov=document.getElementById("overlay");
+  ov.querySelector(".ov-emoji").textContent=won?"🏆":"💥";
+  ov.querySelector(".ov-title").textContent=won?"Победа!":"Взрыв!";
+  ov.querySelector(".ov-sub").textContent=won
+    ?`Счёт: ${score} · Рекорд: ${best[mode]}`
+    :`Попался на мину! Счёт: ${score}`;
+  ov.querySelector(".mode-selector").style.display="none";
+  ov.querySelector("#start-btn").textContent="ЕЩЁ РАЗ";
+  ov.classList.remove("hidden");
+}
+
+function updateUI(){
+  document.getElementById("mines-val").textContent=Math.max(0,mineCount-flagged);
+  document.getElementById("score-val").textContent=score;
+  document.getElementById("best-val").textContent=best[mode];
+}
+
+// ── Input ────────────────────────────────────────────────────────────────────
+let longPressTimer=null,longPressTarget=null;
+document.getElementById("board").addEventListener("pointerdown",e=>{
+  if(gameOver)return;
+  const el=e.target.closest(".cell");
+  if(!el)return;
+  e.preventDefault();
+  const r=+el.dataset.r,c=+el.dataset.c;
+  longPressTarget={r,c};
+  longPressTimer=setTimeout(()=>{
+    toggleFlag(r,c);
+    if(tg?.HapticFeedback)tg.HapticFeedback.impactOccurred("medium");
+    longPressTarget=null;
+  },400);
+},{passive:false});
+
+document.getElementById("board").addEventListener("pointerup",e=>{
+  clearTimeout(longPressTimer);
+  if(!longPressTarget)return;
+  const el=e.target.closest(".cell");
+  if(!el)return;
+  e.preventDefault();
+  const r=+el.dataset.r,c=+el.dataset.c;
+  if(r===longPressTarget.r&&c===longPressTarget.c)reveal(r,c);
+  longPressTarget=null;
+},{passive:false});
+
+document.getElementById("board").addEventListener("pointercancel",()=>{
+  clearTimeout(longPressTimer);longPressTarget=null;
+});
+
+document.getElementById("board").addEventListener("contextmenu",e=>e.preventDefault());
+
+// ── Mode selection ───────────────────────────────────────────────────────────
+document.querySelectorAll(".mode-card").forEach(card=>{
+  card.addEventListener("click",()=>{
+    document.querySelectorAll(".mode-card").forEach(c=>c.classList.remove("selected"));
+    card.classList.add("selected");
+    mode=card.dataset.mode;
+  });
+});
+
+document.getElementById("start-btn").addEventListener("click",()=>{
+  document.getElementById("overlay").classList.add("hidden");
+  document.querySelector(".mode-selector").style.display="";
+  document.querySelector(".ov-emoji").textContent="💣";
+  document.querySelector(".ov-title").textContent="Сапёр";
+  document.querySelector(".ov-sub").textContent="Открывай клетки, избегай мин. Долгий тап — флажок.";
+  document.querySelector("#start-btn").textContent="ИГРАТЬ";
+  initGame();
+});
+
+document.getElementById("mode-btn").addEventListener("click",()=>{
+  document.getElementById("overlay").classList.remove("hidden");
+});
+
+window.addEventListener("resize",()=>{if(!gameOver)buildBoard();});
+initGame();
+</script>
+</body>
+</html>
