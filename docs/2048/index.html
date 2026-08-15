@@ -129,30 +129,29 @@ html, body {
 .ov-emoji { font-size:52px; }
 .ov-title { font-size:26px; font-weight:900; }
 .ov-sub   { font-size:13px; color:var(--muted); text-align:center; padding:0 24px; line-height:1.5; }
+/* ── Liquid Glass Button ── */
+.btn-base{position:relative;display:inline-block;padding:3px;border-radius:21px;margin-top:8px;}
+.btn-base--orange{background:linear-gradient(135deg,#ff7820,#ff4500);}
 .play-btn {
-  padding:14px 44px;
-  background:linear-gradient(135deg,rgba(255,112,0,0.95),rgba(255,69,0,0.95));
-  backdrop-filter:blur(8px);
+  position:relative;margin-top:0;padding:14px 44px;
+  background:radial-gradient(circle at var(--light-x,50%) var(--light-y,50%),rgba(255,255,255,0.35),transparent 50%),rgba(255,255,255,0.12);
+  backdrop-filter:blur(8px) saturate(1.2);
   color:#fff; border:none; border-radius:18px;
   font-size:16px; font-weight:800; cursor:pointer;
-  box-shadow:0 4px 24px rgba(255,112,0,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
-  transition:transform .12s, border-radius .6s cubic-bezier(.4,0,.2,1), filter .6s;
+  box-shadow:inset 0 1px 3px rgba(255,255,255,0.6),inset 0 -10px 20px rgba(0,0,0,0.15),0 4px 24px rgba(0,0,0,0.3);
+  transform:scale(var(--btn-scale,1));transition:box-shadow .3s;
 }
-.play-btn:hover{
-  filter:url(#gooey);
-  border-radius:45% 55% 50% 50%;
-  animation:blob-hover 3s ease-in-out infinite;
-}
-.play-btn:active {
-  transform:scale(.96);
-  border-radius:50% 50% 45% 55%;
-  box-shadow:0 2px 12px rgba(255,112,0,0.6), inset 0 2px 4px rgba(0,0,0,0.2);
-}
-@keyframes blob-hover{
-  0%,100%{border-radius:45% 55% 50% 50%;}
-  25%{border-radius:50% 50% 55% 45%;}
-  50%{border-radius:55% 45% 50% 50%;}
-  75%{border-radius:50% 50% 45% 55%;}
+.play-btn::before{content:'';position:absolute;inset:0;border-radius:inherit;
+  border:1.5px solid rgba(255,255,255,0.4);
+  mask:linear-gradient(135deg,#000 30%,transparent 70%);pointer-events:none;}
+.play-btn::after{content:'';position:absolute;top:8%;left:15%;width:40%;height:25%;
+  background:radial-gradient(ellipse,rgba(255,255,255,0.5),transparent 70%);
+  transform:translate(var(--light-offset-x,0),var(--light-offset-y,0));
+  transition:transform .6s cubic-bezier(.25,.46,.45,.94);pointer-events:none;border-radius:50%;}
+@media(prefers-reduced-motion:reduce){
+  .play-btn{transition:transform .2s;}
+  .play-btn:hover{transform:scale(1.02);}
+  .play-btn:active{transform:scale(0.98);}
 }
 
 /* ── Toast ── */
@@ -203,7 +202,9 @@ html, body {
   <div class="ov-emoji">🔢</div>
   <div class="ov-title">2048</div>
   <div class="ov-sub">Свайпай — объединяй плитки.<br>Дойди до <b style="color:#ff7000">2048</b>!</div>
-  <button class="play-btn" id="start-btn">ИГРАТЬ</button>
+  <div class="btn-base btn-base--orange">
+    <button class="play-btn" id="start-btn">ИГРАТЬ</button>
+  </div>
 </div>
 
 <div id="toast" id="toast"></div>
@@ -441,6 +442,86 @@ document.getElementById('new-btn').addEventListener('click', () => {
 
 // ── Boot ────────────────────────────────────────────────────────
 buildBoard();
+
+// ── Liquid Glass Physics ─────────────────────────────────────────────────────
+class SpringValue{
+  constructor(initial,stiffness=0.08,damping=0.82){
+    this.current=initial;this.target=initial;this.velocity=0;
+    this.stiffness=stiffness;this.damping=damping;
+  }
+  update(){
+    this.velocity+=(this.target-this.current)*this.stiffness;
+    this.velocity*=this.damping;
+    this.current+=this.velocity;
+  }
+  set(newTarget){this.target=newTarget;}
+}
+
+const btnPhysics={
+  lightX:new SpringValue(0.5),
+  lightY:new SpringValue(0.5),
+  scale:new SpringValue(1,0.15,0.75),
+  offsetX:new SpringValue(0,0.06,0.85),
+  offsetY:new SpringValue(0,0.06,0.85),
+};
+
+let breathTime=0;
+function updateButton(){
+  btnPhysics.lightX.update();
+  btnPhysics.lightY.update();
+  btnPhysics.scale.update();
+  btnPhysics.offsetX.update();
+  btnPhysics.offsetY.update();
+
+  const btn=document.querySelector(".play-btn");
+  if(btn){
+    btn.style.setProperty("--light-x",`${btnPhysics.lightX.current*100}%`);
+    btn.style.setProperty("--light-y",`${btnPhysics.lightY.current*100}%`);
+    btn.style.setProperty("--btn-scale",btnPhysics.scale.current);
+    btn.style.setProperty("--light-offset-x",`${btnPhysics.offsetX.current}px`);
+    btn.style.setProperty("--light-offset-y",`${btnPhysics.offsetY.current}px`);
+
+    if(!btn.matches(":hover")&&!btn.matches(":active")){
+      breathTime+=0.016;
+      const breath=Math.sin(breathTime*0.5)*0.002;
+      btnPhysics.scale.set(1+breath);
+    }
+  }
+
+  requestAnimationFrame(updateButton);
+}
+updateButton();
+
+document.addEventListener("pointermove",e=>{
+  const btn=document.querySelector(".play-btn");
+  if(!btn)return;
+  const rect=btn.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width;
+  const y=(e.clientY-rect.top)/rect.height;
+  const inBounds=x>=0&&x<=1&&y>=0&&y<=1;
+
+  if(inBounds){
+    btnPhysics.lightX.set(x);
+    btnPhysics.lightY.set(y);
+    const dx=(x-0.5)*30;
+    const dy=(y-0.5)*30;
+    btnPhysics.offsetX.set(dx);
+    btnPhysics.offsetY.set(dy);
+  }
+});
+
+document.addEventListener("pointerdown",e=>{
+  const btn=document.querySelector(".play-btn");
+  if(btn&&btn.contains(e.target)){
+    btnPhysics.scale.set(0.965);
+  }
+});
+
+document.addEventListener("pointerup",()=>{
+  btnPhysics.scale.set(1.01);
+  setTimeout(()=>btnPhysics.scale.set(1),50);
+});
+
 </script>
 </body>
 </html>
