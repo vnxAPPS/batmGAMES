@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -7,92 +7,64 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root {
-  --bg: #1a1c2a;
-  --panel: #222436;
-  --border: rgba(255,255,255,0.08);
-  --text: #f2f4ff;
-  --muted: #8b92b0;
-  --blue: #ff7000;
-  --red: #ff4b4b;
-  --green: #22e77c;
-  --neutral: #555c7a;
+  --bg:#1a1c2a; --panel:#222436; --border:rgba(255,255,255,0.08);
+  --text:#f2f4ff; --muted:#8b92b0;
+  --blue:#3b9eff; --red:#ff4b4b; --neutral:#555c7a;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text);
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  user-select:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
-#wrap { display:flex; flex-direction:column; height:100vh; max-width:480px; margin:0 auto; }
-#topbar { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--panel);
-  border-bottom:1px solid var(--border); flex-shrink:0; }
-.back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  text-decoration: none;
-  border-radius: 10px;
-  background: rgba(255,112,0,0.12);
-  border: 1px solid rgba(255,112,0,0.35);
-  box-shadow: 0 0 10px rgba(255,112,0,0.25), inset 0 0 8px rgba(255,112,0,0.08);
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-.back-btn:active {
-  transform: scale(0.92);
-  box-shadow: 0 0 18px rgba(255,112,0,0.5), inset 0 0 12px rgba(255,112,0,0.15);
-}
-.back-arrow {
-  display: block;
-  width: 14px;
-  height: 14px;
-  border-left: 2.5px solid #ff7000;
-  border-bottom: 2.5px solid #ff7000;
-  transform: rotate(45deg) translateX(2px);
-  filter: drop-shadow(0 0 4px #ff7000);
-}
-#topbar h1 { font-size:14px; font-weight:800; flex:1; text-align:center; }
-#turn-info { font-size:11px; color:var(--muted); }
-#bar-wrap { padding:6px 12px; background:var(--panel); border-bottom:1px solid var(--border); flex-shrink:0; }
-#powerbar { display:flex; height:10px; border-radius:999px; overflow:hidden; gap:2px; }
-#bar-blue { background:var(--blue); transition:flex .5s; }
-#bar-red  { background:var(--red);  transition:flex .5s; }
-#bar-green{ background:var(--green);transition:flex .5s; }
-#bar-gray { background:var(--neutral); flex:1; }
-#bar-labels { display:flex; justify-content:space-between; margin-top:3px; font-size:10px; color:var(--muted); }
-#canvas-wrap { flex:1; position:relative; overflow:hidden; }
-#map { width:100%; height:100%; cursor:pointer; touch-action:manipulation; }
-#info-panel { position:absolute; bottom:0; left:0; right:0; background:rgba(20,22,38,0.95);
-  backdrop-filter:blur(8px); padding:12px 16px; border-top:1px solid var(--border);
-  transition:transform .25s; transform:translateY(100%); }
-#info-panel.show { transform:translateY(0); }
-#info-panel h3 { font-size:15px; font-weight:800; margin-bottom:6px; }
-#info-panel p  { font-size:12px; color:var(--muted); margin-bottom:10px; }
-.btn-row { display:flex; gap:8px; }
-.btn { flex:1; padding:10px; border:none; border-radius:12px; font:inherit;
-  font-weight:800; font-size:13px; cursor:pointer; color:#fff; }
-.btn-attack { background:linear-gradient(135deg,#ff4b4b,#c42020); }
-.btn-reinforce { background:linear-gradient(135deg,#ff7000,#1a6fc4); }
-.btn-cancel { background:rgba(255,255,255,0.08); color:var(--muted); flex:0 0 auto; padding:10px 16px; }
-#log { position:absolute; top:8px; left:50%; transform:translateX(-50%);
-  background:rgba(20,22,38,0.88); backdrop-filter:blur(6px);
-  border:1px solid var(--border); border-radius:12px;
-  padding:6px 14px; font-size:12px; font-weight:700; color:#fff;
-  pointer-events:none; opacity:0; transition:opacity .3s; white-space:nowrap; }
-#log.show { opacity:1; }
-#overlay { position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:12px;
-  background:rgba(12,14,24,0.92); backdrop-filter:blur(6px);
-  text-align:center; padding:24px; z-index:10; }
-#overlay.hidden { display:none; }
-#overlay h2 { font-size:24px; font-weight:800; }
-#overlay p { font-size:13px; color:var(--muted); max-width:300px; line-height:1.55; }
-.big-btn { padding:14px 36px; border:none; border-radius:14px; font:inherit;
-  font-weight:800; font-size:15px; color:#fff; cursor:pointer;
-  background:linear-gradient(135deg,#a23cf5,#6414c9);
-  box-shadow:0 6px 24px rgba(162,60,245,.45); }
-.big-btn:active { transform:scale(.96); }
-#phase-badge { font-size:11px; color:var(--muted); }
+  user-select:none;-webkit-tap-highlight-color:transparent;}
+#wrap{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;}
+#topbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel);
+  border-bottom:1px solid var(--border);flex-shrink:0;}
+.back-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;
+  text-decoration:none;border-radius:10px;background:rgba(255,112,0,0.12);
+  border:1px solid rgba(255,112,0,0.35);box-shadow:0 0 10px rgba(255,112,0,0.25);
+  transition:all 0.15s;flex-shrink:0;}
+.back-btn:active{transform:scale(0.92);}
+.back-arrow{display:block;width:14px;height:14px;border-left:2.5px solid #ff7000;
+  border-bottom:2.5px solid #ff7000;transform:rotate(45deg) translateX(2px);
+  filter:drop-shadow(0 0 4px #ff7000);}
+#topbar h1{font-size:14px;font-weight:800;flex:1;text-align:center;}
+#turn-info{font-size:11px;color:var(--muted);white-space:nowrap;}
+#bar-wrap{padding:6px 12px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;}
+#powerbar{display:flex;height:10px;border-radius:999px;overflow:hidden;gap:2px;}
+#bar-blue{background:var(--blue);transition:flex .5s;min-width:3px;}
+#bar-red{background:var(--red);transition:flex .5s;min-width:3px;}
+#bar-gray{background:var(--neutral);flex:1;}
+#bar-labels{display:flex;justify-content:space-between;margin-top:3px;font-size:10px;color:var(--muted);}
+#canvas-wrap{flex:1;position:relative;overflow:hidden;touch-action:none;}
+#map{width:100%;height:100%;touch-action:none;cursor:default;display:block;}
+#log{position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  background:rgba(20,22,38,0.92);backdrop-filter:blur(6px);
+  border:1px solid var(--border);border-radius:12px;
+  padding:6px 14px;font-size:12px;font-weight:700;color:#fff;
+  pointer-events:none;opacity:0;transition:opacity .3s;
+  white-space:nowrap;max-width:90%;text-overflow:ellipsis;overflow:hidden;}
+#log.show{opacity:1;}
+#hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+  background:rgba(59,158,255,0.12);border:1px solid rgba(59,158,255,0.32);
+  border-radius:10px;padding:6px 14px;font-size:11px;color:rgba(59,158,255,0.95);
+  pointer-events:none;opacity:1;transition:opacity .6s;white-space:nowrap;}
+#hint.hidden{opacity:0;}
+#overlay{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  background:rgba(12,14,24,0.93);backdrop-filter:blur(6px);
+  text-align:center;padding:24px;z-index:10;}
+#overlay.hidden{display:none;}
+#overlay h2{font-size:24px;font-weight:800;line-height:1.25;}
+#overlay p{font-size:13px;color:var(--muted);max-width:300px;line-height:1.6;}
+.player-badge{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(59,158,255,0.14);border:1px solid rgba(59,158,255,0.4);
+  border-radius:999px;padding:8px 18px;font-size:13px;font-weight:700;}
+.player-dot{width:14px;height:14px;border-radius:50%;background:#3b9eff;
+  box-shadow:0 0 8px rgba(59,158,255,0.7);flex-shrink:0;}
+.big-btn{padding:14px 36px;border:none;border-radius:14px;font:inherit;
+  font-weight:800;font-size:15px;color:#fff;cursor:pointer;
+  background:linear-gradient(135deg,#3b9eff,#1a6fc4);
+  box-shadow:0 6px 24px rgba(59,158,255,.45);}
+.big-btn:active{transform:scale(.96);}
 </style>
 </head>
 <body>
@@ -100,397 +72,338 @@ html,body { height:100%; overflow:hidden; background:var(--bg); color:var(--text
   <div id="topbar">
     <a class="back-btn" href="../"><span class="back-arrow"></span></a>
     <h1>⚔️ Битва за территорию</h1>
-    <span id="turn-info">Ход 1</span>
+    <span id="turn-info">Твой ход</span>
   </div>
   <div id="bar-wrap">
     <div id="powerbar">
       <div id="bar-blue" style="flex:1"></div>
       <div id="bar-red"  style="flex:1"></div>
-      <div id="bar-green"style="flex:1"></div>
       <div id="bar-gray" style="flex:1"></div>
     </div>
     <div id="bar-labels">
-      <span id="lbl-blue">👤 0</span>
-      <span id="lbl-red">🤖 0</span>
-      <span id="lbl-neutral">⬜ 0</span>
+      <span id="lbl-blue">🔵 Ты: 1</span>
+      <span id="lbl-neutral">⬜ 14</span>
+      <span id="lbl-red">🤖 Враг: 1</span>
     </div>
   </div>
   <div id="canvas-wrap">
     <canvas id="map"></canvas>
     <div id="log"></div>
-    <div id="info-panel">
-      <h3 id="ip-title">Регион</h3>
-      <p id="ip-desc">…</p>
-      <div class="btn-row">
-        <button class="btn btn-attack" id="btn-attack">⚔️ Атаковать</button>
-        <button class="btn btn-reinforce" id="btn-reinforce">🛡 Укрепить</button>
-        <button class="btn btn-cancel" id="btn-cancel">✕</button>
-      </div>
-    </div>
+    <div id="hint">Перетяни с синей зоны на соседнюю</div>
     <div id="overlay">
-      <h2 id="ov-title">⚔️ Битва за<br>территорию</h2>
-      <p id="ov-desc">Завоюй все регионы карты! Выбирай свои территории, атакуй соседей или укрепляй оборону.<br><br>
-      <b>Ты — оранжевый</b> 🟠 · Красный и зелёный — ИИ-противники.</p>
-      <span id="phase-badge"></span>
+      <h2>⚔️ Битва за<br>территорию</h2>
+      <div class="player-badge"><div class="player-dot"></div>Ты — синий 🔵</div>
+      <p>Перетяни с <b style="color:#3b9eff">синей зоны</b> на соседнюю — атакуй врага или перебрось войска между своими.</p>
       <button class="big-btn" id="ov-btn">▶ Начать</button>
     </div>
   </div>
 </div>
-
 <script>
 "use strict";
-const tg = window.Telegram?.WebApp;
-if (tg) { tg.ready(); tg.expand(); }
+const tg=window.Telegram?.WebApp;
+if(tg){tg.ready();tg.expand();}
 
-// ── Карта: регионы как многоугольники (нормированные 0..1) ─────────────────
-// Вымышленная карта из 16 регионов — 4 «континента» по 4 региона
-// Координаты — доля от ширины/высоты canvas
-const RAW_REGIONS = [
-  // Континент A (северо-запад)
-  { id:0,  name:"Арктика",     cx:.18, cy:.14, pts:[[.04,.04],[.32,.04],[.35,.22],[.20,.26],[.05,.18]] },
-  { id:1,  name:"Таёжный край",cx:.12, cy:.32, pts:[[.04,.20],[.20,.28],[.22,.44],[.06,.44]] },
-  { id:2,  name:"Западный берег",cx:.28,cy:.38,pts:[[.21,.28],[.36,.24],[.40,.44],[.22,.46]] },
-  { id:3,  name:"Равнина",     cx:.22, cy:.54, pts:[[.06,.46],[.22,.46],[.24,.64],[.06,.64]] },
-  // Континент B (северо-восток)
-  { id:4,  name:"Полюс",       cx:.58, cy:.10, pts:[[.44,.04],[.74,.04],[.74,.18],[.44,.22]] },
-  { id:5,  name:"Восточный хребет",cx:.60,cy:.30,pts:[[.44,.24],[.60,.20],[.66,.40],[.44,.42]] },
-  { id:6,  name:"Морской город",cx:.74,cy:.26, pts:[[.62,.20],[.78,.08],[.90,.18],[.82,.38],[.68,.40]] },
-  { id:7,  name:"Остров Восток",cx:.78,cy:.46, pts:[[.82,.40],[.96,.36],[.96,.56],[.80,.56]] },
-  // Континент C (юго-запад)
-  { id:8,  name:"Пустыня",     cx:.18, cy:.72, pts:[[.06,.66],[.24,.64],[.26,.80],[.08,.82]] },
-  { id:9,  name:"Саванна",     cx:.32, cy:.68, pts:[[.24,.64],[.42,.62],[.42,.78],[.26,.80]] },
-  { id:10, name:"Джунгли",     cx:.22, cy:.86, pts:[[.08,.84],[.26,.82],[.28,.96],[.08,.96]] },
-  { id:11, name:"Лагуна",      cx:.38, cy:.84, pts:[[.28,.80],[.44,.78],[.46,.96],[.28,.96]] },
-  // Континент D (юго-восток)
-  { id:12, name:"Степь",       cx:.60, cy:.62, pts:[[.46,.56],[.66,.54],[.68,.72],[.46,.72]] },
-  { id:13, name:"Горный перевал",cx:.76,cy:.62,pts:[[.68,.52],[.86,.52],[.88,.72],[.68,.72]] },
-  { id:14, name:"Южный берег", cx:.62, cy:.80, pts:[[.46,.74],[.68,.74],[.66,.92],[.46,.94]] },
-  { id:15, name:"Архипелаг",   cx:.80, cy:.80, pts:[[.70,.74],[.88,.74],[.92,.94],[.68,.94]] },
+const RAW_REGIONS=[
+  {id:0, name:"Арктика",        cx:.18,cy:.14,pts:[[.04,.04],[.32,.04],[.35,.22],[.20,.26],[.05,.18]]},
+  {id:1, name:"Таёжный край",   cx:.12,cy:.32,pts:[[.04,.20],[.20,.28],[.22,.44],[.06,.44]]},
+  {id:2, name:"Западный берег", cx:.28,cy:.38,pts:[[.21,.28],[.36,.24],[.40,.44],[.22,.46]]},
+  {id:3, name:"Равнина",        cx:.22,cy:.54,pts:[[.06,.46],[.22,.46],[.24,.64],[.06,.64]]},
+  {id:4, name:"Полюс",          cx:.58,cy:.10,pts:[[.44,.04],[.74,.04],[.74,.18],[.44,.22]]},
+  {id:5, name:"Хребет",         cx:.60,cy:.30,pts:[[.44,.24],[.60,.20],[.66,.40],[.44,.42]]},
+  {id:6, name:"Морской город",  cx:.74,cy:.26,pts:[[.62,.20],[.78,.08],[.90,.18],[.82,.38],[.68,.40]]},
+  {id:7, name:"Остров Восток",  cx:.78,cy:.46,pts:[[.82,.40],[.96,.36],[.96,.56],[.80,.56]]},
+  {id:8, name:"Пустыня",        cx:.18,cy:.72,pts:[[.06,.66],[.24,.64],[.26,.80],[.08,.82]]},
+  {id:9, name:"Саванна",        cx:.32,cy:.68,pts:[[.24,.64],[.42,.62],[.42,.78],[.26,.80]]},
+  {id:10,name:"Джунгли",        cx:.22,cy:.86,pts:[[.08,.84],[.26,.82],[.28,.96],[.08,.96]]},
+  {id:11,name:"Лагуна",         cx:.38,cy:.84,pts:[[.28,.80],[.44,.78],[.46,.96],[.28,.96]]},
+  {id:12,name:"Степь",          cx:.60,cy:.62,pts:[[.46,.56],[.66,.54],[.68,.72],[.46,.72]]},
+  {id:13,name:"Перевал",        cx:.76,cy:.62,pts:[[.68,.52],[.86,.52],[.88,.72],[.68,.72]]},
+  {id:14,name:"Южный берег",    cx:.62,cy:.80,pts:[[.46,.74],[.68,.74],[.66,.92],[.46,.94]]},
+  {id:15,name:"Архипелаг",      cx:.80,cy:.80,pts:[[.70,.74],[.88,.74],[.92,.94],[.68,.94]]},
 ];
-
-// Соседство регионов (атаковать можно только соседа)
-const ADJ = {
-  0:[1,2,4],  1:[0,2,3],   2:[0,1,3,9], 3:[1,2,8,9],
-  4:[0,5,6],  5:[4,6,7,2], 6:[4,5,7],   7:[5,6,13],
-  8:[3,9,10], 9:[2,3,8,11,12],10:[8,11],11:[9,10,14],
-  12:[9,7,13,14],13:[7,12,15],14:[12,11,15],15:[13,14],
+const ADJ={
+  0:[1,2,4],   1:[0,2,3],       2:[0,1,3,9],     3:[1,2,8,9],
+  4:[0,5,6],   5:[4,6,7,2],     6:[4,5,7],        7:[5,6,13],
+  8:[3,9,10],  9:[2,3,8,11,12], 10:[8,11],        11:[9,10,14],
+  12:[9,7,13,14],13:[7,12,15],  14:[12,11,15],    15:[13,14],
 };
-
-const CONTINENT = [
-  { name:"Арктика",   ids:[0,1,2,3],  bonus:3 },
-  { name:"Восток",    ids:[4,5,6,7],  bonus:3 },
-  { name:"Юго-запад", ids:[8,9,10,11],bonus:3 },
-  { name:"Юго-восток",ids:[12,13,14,15],bonus:3 },
+const PLAYERS=[
+  {id:0,name:"Ты",   color:"#3b9eff",darkColor:"#1a5ca8",isHuman:true},
+  {id:1,name:"Враг", color:"#ff4b4b",darkColor:"#a82020",isHuman:false},
 ];
+const NEUTRAL={id:2,color:"#555c7a",darkColor:"#3a405a"};
 
-// ── Состояние игры ──────────────────────────────────────────────────────────
-const PLAYERS = [
-  { id:0, name:"Ты",      color:"#ff7000", darkColor:"#1a5ca8", isHuman:true  },
-  { id:1, name:"Красный", color:"#ff4b4b", darkColor:"#a82020", isHuman:false },
-  { id:2, name:"Зелёный", color:"#22e77c", darkColor:"#0f9d58", isHuman:false },
-];
-const NEUTRAL = { id:3, name:"Нейтральный", color:"#555c7a", darkColor:"#3a405a" };
+let regions,turnNum,gamePhase,logTimer,hintHidden;
+let dragFrom=null,dragPos=null,dragHover=null,animFrame=null;
 
-let regions, turnNum, currentPlayer, selectedId, gamePhase, logTimer;
-
-function initGame() {
-  regions = RAW_REGIONS.map(r => ({ ...r, owner:3, units:10 }));
-  turnNum = 1; currentPlayer = 0; selectedId = null; gamePhase = "pick";
-
-  // стартовое распределение: каждому игроку по 1 региону
-  const starts = [0, 4, 8]; // по одному на каждом континенте (первый)
-  starts.forEach((rid, pi) => { regions[rid].owner = pi; regions[rid].units = 15; });
+function initGame(){
+  regions=RAW_REGIONS.map(r=>({...r,owner:2,units:10}));
+  turnNum=1; gamePhase="play"; hintHidden=false;
+  dragFrom=null; dragPos=null; dragHover=null;
+  regions[0].owner=0; regions[0].units=15;   // player: top-left
+  regions[15].owner=1; regions[15].units=15; // AI: bottom-right
+  document.getElementById("hint").classList.remove("hidden");
 }
 
 // ── Canvas ──────────────────────────────────────────────────────────────────
-const canvas = document.getElementById("map");
-const ctx    = canvas.getContext("2d");
-let W = 0, H = 0;
-
-function resize() {
-  const wrap = document.getElementById("canvas-wrap");
-  W = wrap.clientWidth; H = wrap.clientHeight;
-  canvas.width  = W; canvas.height = H;
-  draw();
+const canvas=document.getElementById("map"),ctx=canvas.getContext("2d");
+let W=0,H=0;
+function resize(){
+  const wrap=document.getElementById("canvas-wrap");
+  W=wrap.clientWidth; H=wrap.clientHeight;
+  canvas.width=W; canvas.height=H; draw();
 }
-window.addEventListener("resize", resize);
+window.addEventListener("resize",resize);
+const rx=x=>x*W, ry=y=>y*H;
+function ownerStyle(r){return r.owner===2?NEUTRAL:PLAYERS[r.owner];}
 
-function rx(x) { return x * W; }
-function ry(y) { return y * H; }
-
-function getOwnerStyle(r) {
-  if (r.owner === 3) return NEUTRAL;
-  return PLAYERS[r.owner];
-}
-
-function draw() {
-  ctx.clearRect(0, 0, W, H);
-
-  // фон
-  ctx.fillStyle = "#1e2235";
-  ctx.fillRect(0, 0, W, H);
-  // океан — точки
-  ctx.fillStyle = "rgba(255,112,0,0.08)";
-  for (let xi = 0; xi < W; xi += 40) for (let yi = 0; yi < H; yi += 40)
-    { ctx.beginPath(); ctx.arc(xi+20, yi+20, 6, 0, Math.PI*2); ctx.fill(); }
-
-  regions.forEach(r => {
-    const owner = getOwnerStyle(r);
-    const sel   = r.id === selectedId;
-    const pts   = r.pts.map(([x,y]) => [rx(x), ry(y)]);
-
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle="#1e2235"; ctx.fillRect(0,0,W,H);
+  // ocean dots
+  ctx.fillStyle="rgba(59,158,255,0.05)";
+  for(let xi=0;xi<W;xi+=40)for(let yi=0;yi<H;yi+=40){
+    ctx.beginPath();ctx.arc(xi+20,yi+20,6,0,Math.PI*2);ctx.fill();
+  }
+  regions.forEach(r=>{
+    const own=ownerStyle(r);
+    const isFrom=r.id===dragFrom;
+    const isHover=dragFrom!==null&&r.id===dragHover&&r.id!==dragFrom;
+    const isValid=dragFrom!==null&&ADJ[dragFrom]?.includes(r.id)&&r.id!==dragFrom;
+    const pts=r.pts.map(([x,y])=>[rx(x),ry(y)]);
     ctx.save();
-    // тень выбранного
-    if (sel) { ctx.shadowColor = owner.color; ctx.shadowBlur = 18; }
-
-    // заливка
+    if(isFrom){ctx.shadowColor=own.color;ctx.shadowBlur=22;}
+    else if(isHover&&isValid){ctx.shadowColor="#fff";ctx.shadowBlur=20;}
     ctx.beginPath();
-    ctx.moveTo(pts[0][0], pts[0][1]);
-    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
     ctx.closePath();
-    ctx.fillStyle = sel
-      ? owner.color
-      : r.owner === 3 ? owner.color : owner.color + "cc";
+    ctx.fillStyle=own.color+(isFrom||isValid?"ff":"bb");
     ctx.fill();
-
-    // граница
-    ctx.strokeStyle = sel ? "#fff" : "rgba(255,255,255,0.25)";
-    ctx.lineWidth   = sel ? 2.5 : 1.5;
+    if(isFrom||(isHover&&isValid)){ctx.strokeStyle="#fff";ctx.lineWidth=2.5;}
+    else if(isValid){ctx.strokeStyle="rgba(255,255,255,0.55)";ctx.lineWidth=2;}
+    else{ctx.strokeStyle="rgba(255,255,255,0.18)";ctx.lineWidth=1.5;}
     ctx.stroke();
     ctx.restore();
-
-    // кружок с числом юнитов
-    const cx = rx(r.cx), cy = ry(r.cy);
-    const radius = Math.min(W, H) * 0.04;
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI*2);
-    ctx.fillStyle = r.owner === 3 ? "#fff" : owner.darkColor;
+    // units circle
+    const cx2=rx(r.cx),cy2=ry(r.cy);
+    const rad=Math.min(W,H)*0.04;
+    ctx.beginPath();ctx.arc(cx2,cy2,rad,0,Math.PI*2);
+    ctx.fillStyle=r.owner===2?"rgba(255,255,255,0.88)":own.darkColor;
     ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.4)";
-    ctx.lineWidth = 1.5; ctx.stroke();
-
-    ctx.fillStyle = r.owner === 3 ? "#333" : "#fff";
-    ctx.font = `800 ${Math.round(radius*0.9)}px system-ui,sans-serif`;
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(r.units, cx, cy);
+    ctx.strokeStyle="rgba(255,255,255,0.35)";ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=r.owner===2?"#222":"#fff";
+    ctx.font=`800 ${Math.round(rad*0.9)}px system-ui,sans-serif`;
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(r.units,cx2,cy2);
   });
+  drawArrow();
+  updateBar();updateTurnInfo();
+}
 
-  updateBar();
-  updateTurnInfo();
+function drawArrow(){
+  if(dragFrom===null||dragPos===null)return;
+  const fr=regions[dragFrom];
+  const x1=rx(fr.cx),y1=ry(fr.cy),x2=dragPos.x,y2=dragPos.y;
+  const dist=Math.hypot(x2-x1,y2-y1);
+  if(dist<12)return;
+  const angle=Math.atan2(y2-y1,x2-x1);
+  const isValid=dragHover!==null&&dragHover!==dragFrom&&ADJ[dragFrom]?.includes(dragHover);
+  const col=isValid?"rgba(255,255,255,0.92)":"rgba(255,255,255,0.4)";
+  ctx.save();
+  ctx.strokeStyle=col;ctx.lineWidth=3;
+  ctx.setLineDash([8,5]);
+  ctx.lineDashOffset=-((Date.now()/55)%13);
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2-18*Math.cos(angle),y2-18*Math.sin(angle));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=col;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-18*Math.cos(angle-0.44),y2-18*Math.sin(angle-0.44));
+  ctx.lineTo(x2-11*Math.cos(angle),     y2-11*Math.sin(angle));
+  ctx.lineTo(x2-18*Math.cos(angle+0.44),y2-18*Math.sin(angle+0.44));
+  ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+
+function animLoop(){
+  if(dragFrom!==null){draw();animFrame=requestAnimationFrame(animLoop);}
 }
 
 // ── UI helpers ──────────────────────────────────────────────────────────────
-function updateBar() {
-  const counts = [0,0,0,0];
-  regions.forEach(r => counts[r.owner]++);
-  const total = regions.length;
-  document.getElementById("bar-blue").style.flex  = counts[0];
-  document.getElementById("bar-red").style.flex   = counts[1];
-  document.getElementById("bar-green").style.flex = counts[2];
-  document.getElementById("bar-gray").style.flex  = counts[3];
-  document.getElementById("lbl-blue").textContent  = "👤 " + counts[0];
-  document.getElementById("lbl-red").textContent   = "🤖 " + counts[1];
-  document.getElementById("lbl-neutral").textContent = "⬜ " + counts[3];
+function updateBar(){
+  const c=[0,0,0];regions.forEach(r=>c[r.owner]++);
+  document.getElementById("bar-blue").style.flex=c[0];
+  document.getElementById("bar-red").style.flex=c[1];
+  document.getElementById("bar-gray").style.flex=c[2];
+  document.getElementById("lbl-blue").textContent="🔵 Ты: "+c[0];
+  document.getElementById("lbl-red").textContent="🤖 Враг: "+c[1];
+  document.getElementById("lbl-neutral").textContent="⬜ "+c[2];
 }
-
-function updateTurnInfo() {
-  const p = currentPlayer < 3 ? PLAYERS[currentPlayer] : NEUTRAL;
-  document.getElementById("turn-info").textContent =
-    currentPlayer === 0 ? `Твой ход` : `Ход ИИ…`;
+function updateTurnInfo(){
+  document.getElementById("turn-info").textContent=gamePhase==="play"?"Твой ход":"";
 }
-
-function showLog(msg, dur=1800) {
-  const el = document.getElementById("log");
-  el.textContent = msg; el.classList.add("show");
+function showLog(msg,dur=1800){
+  const el=document.getElementById("log");
+  el.textContent=msg;el.classList.add("show");
   clearTimeout(logTimer);
-  logTimer = setTimeout(() => el.classList.remove("show"), dur);
+  logTimer=setTimeout(()=>el.classList.remove("show"),dur);
+}
+function hideHint(){
+  if(hintHidden)return;hintHidden=true;
+  document.getElementById("hint").classList.add("hidden");
 }
 
-function showInfo(r) {
-  const owner = getOwnerStyle(r);
-  const myR = regions.filter(x => x.owner === 0);
-  const isMyRegion = r.owner === 0;
-  const canAttack = isMyRegion ? false
-    : currentPlayer === 0 && selectedId !== null && ADJ[selectedId]?.includes(r.id)
-      && regions[selectedId]?.owner === 0 && regions[selectedId]?.units > 1;
-
-  document.getElementById("ip-title").textContent = r.name + " · " + owner.name;
-  document.getElementById("ip-desc").textContent =
-    `Юниты: ${r.units} · ${isMyRegion ? "Твоя территория" : r.owner === 3 ? "Нейтральная" : "Противник"}`;
-  document.getElementById("btn-attack").style.display   = canAttack ? "" : "none";
-  document.getElementById("btn-reinforce").style.display = isMyRegion && currentPlayer === 0 ? "" : "none";
-  document.getElementById("info-panel").classList.add("show");
+// ── Pointer events (drag-to-attack) ─────────────────────────────────────────
+function getPos(e){
+  const rect=canvas.getBoundingClientRect();
+  const sx=canvas.width/rect.width,sy=canvas.height/rect.height;
+  return{mx:(e.clientX-rect.left)*sx,my:(e.clientY-rect.top)*sy};
 }
 
-function hideInfo() {
-  document.getElementById("info-panel").classList.remove("show");
-}
-
-// ── Ввод ─────────────────────────────────────────────────────────────────────
-canvas.addEventListener("pointerdown", e => {
-  if (currentPlayer !== 0 || gamePhase === "gameover") return;
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left), my = (e.clientY - rect.top);
-  const hit = regions.find(r => pointInRegion(mx, my, r));
-  if (!hit) { selectedId = null; hideInfo(); draw(); return; }
-
-  if (hit.owner === 0) {
-    // выбрали свой регион
-    selectedId = hit.id; hideInfo(); draw();
-    showInfo(hit);
-  } else if (selectedId !== null && ADJ[selectedId]?.includes(hit.id)
-             && regions[selectedId].owner === 0 && regions[selectedId].units > 1) {
-    // выбрали цель атаки
-    showInfo(hit);
-  } else {
-    selectedId = hit.id === selectedId ? null : hit.id;
-    hideInfo(); draw();
-    if (selectedId !== null) showInfo(hit);
+canvas.addEventListener("pointerdown",e=>{
+  if(gamePhase!=="play")return;
+  e.preventDefault();
+  const{mx,my}=getPos(e);
+  const hit=regions.find(r=>pip(mx,my,r));
+  if(hit&&hit.owner===0&&hit.units>1){
+    dragFrom=hit.id;dragPos={x:mx,y:my};dragHover=null;
+    canvas.setPointerCapture(e.pointerId);
+    hideHint();
+    cancelAnimationFrame(animFrame);animLoop();
   }
-});
+},{passive:false});
 
-document.getElementById("btn-cancel").addEventListener("click", () => {
-  selectedId = null; hideInfo(); draw();
-});
+canvas.addEventListener("pointermove",e=>{
+  if(dragFrom===null)return;
+  e.preventDefault();
+  const{mx,my}=getPos(e);
+  dragPos={x:mx,y:my};
+  dragHover=regions.find(r=>pip(mx,my,r))?.id??null;
+},{passive:false});
 
-document.getElementById("btn-attack").addEventListener("click", () => {
-  // ip-title содержит имя, найдём целевой регион через последний клик
-  // Проще: ищем регион который показан в панели
-  const title = document.getElementById("ip-title").textContent.split(" · ")[0];
-  const target = regions.find(r => r.name === title);
-  if (!target || selectedId === null) return;
-  const from = regions[selectedId];
-  if (!from || from.owner !== 0 || from.units <= 1) return;
-  if (!ADJ[selectedId].includes(target.id)) return;
-  doAttack(from, target);
-  hideInfo(); selectedId = null; draw();
-  setTimeout(aiTurn, 800);
-});
-
-document.getElementById("btn-reinforce").addEventListener("click", () => {
-  if (selectedId === null) return;
-  const r = regions[selectedId];
-  if (r.owner !== 0) return;
-  r.units += 3;
-  showLog("🛡 +3 юнита в " + r.name);
-  hideInfo(); selectedId = null; draw();
-  setTimeout(aiTurn, 600);
-});
-
-// ── Бой ─────────────────────────────────────────────────────────────────────
-function rollDice(n) {
-  return Array.from({length:n}, () => 1 + (Math.random()*6|0)).sort((a,b)=>b-a);
-}
-
-function doAttack(from, to) {
-  const atkDice = rollDice(Math.min(3, from.units - 1));
-  const defDice = rollDice(Math.min(2, to.units));
-  let atkLoss = 0, defLoss = 0;
-  const pairs = Math.min(atkDice.length, defDice.length);
-  for (let i = 0; i < pairs; i++) {
-    if (atkDice[i] > defDice[i]) defLoss++;
-    else atkLoss++;
+canvas.addEventListener("pointerup",e=>{
+  if(dragFrom===null)return;
+  e.preventDefault();
+  const{mx,my}=getPos(e);
+  const tgt=regions.find(r=>pip(mx,my,r));
+  if(tgt&&tgt.id!==dragFrom&&ADJ[dragFrom]?.includes(tgt.id)){
+    const from=regions[dragFrom];
+    if(tgt.owner===0){
+      if(from.units>1){
+        const moved=Math.floor(from.units/2);
+        from.units-=moved;tgt.units+=moved;
+        showLog("🛡 "+from.name+" → "+tgt.name+": +"+moved);
+        setTimeout(aiTurn,700);
+      }
+    }else if(from.units>1){
+      doAttack(from,tgt);
+      setTimeout(aiTurn,900);
+    }
   }
-  from.units -= atkLoss;
-  to.units   -= defLoss;
-  let msg = `⚔️ ${from.name}→${to.name}: атака ${atkDice[0]}${atkDice[1]?','+atkDice[1]:''} vs защита ${defDice[0]}`;
-  if (to.units <= 0) {
-    const moved = Math.max(1, from.units - 1);
-    from.units -= moved;
-    to.units    = moved;
-    to.owner    = from.owner;
-    msg += " 🏴 Захвачен!";
+  cancelAnimationFrame(animFrame);
+  dragFrom=null;dragPos=null;dragHover=null;draw();
+},{passive:false});
+
+canvas.addEventListener("pointercancel",()=>{
+  cancelAnimationFrame(animFrame);
+  dragFrom=null;dragPos=null;dragHover=null;draw();
+});
+
+// ── Combat ───────────────────────────────────────────────────────────────────
+function roll(n){return Array.from({length:n},()=>1+(Math.random()*6|0)).sort((a,b)=>b-a);}
+
+function doAttack(from,to){
+  const ad=roll(Math.min(3,from.units-1)),dd=roll(Math.min(2,to.units));
+  let al=0,dl=0;
+  const p=Math.min(ad.length,dd.length);
+  for(let i=0;i<p;i++){if(ad[i]>dd[i])dl++;else al++;}
+  from.units-=al;to.units-=dl;
+  if(to.units<=0){
+    const mv=Math.max(1,from.units-1);
+    from.units-=mv;to.units=mv;to.owner=from.owner;
+    showLog("🏴 "+from.name+" захватил "+to.name+"!",2200);
+    if(tg?.HapticFeedback)tg.HapticFeedback.impactOccurred("medium");
     checkWin();
+  }else{
+    const ico=from.owner===0?"⚔️":"🤖";
+    showLog(ico+" "+from.name+"→"+to.name+": −"+al+" / −"+dl,1800);
   }
-  showLog(msg, 2500);
 }
 
-// ── ИИ ──────────────────────────────────────────────────────────────────────
-function aiTurn() {
-  // каждый ИИ-игрок делает 1-2 действия
-  [1,2].forEach(pid => {
-    const mine = regions.filter(r => r.owner === pid && r.units > 1);
-    if (!mine.length) return;
-    // найти лучшую атаку: мои юниты - их юниты максимум
-    let best = null, bestScore = -Infinity;
-    mine.forEach(r => {
-      ADJ[r.id].forEach(nid => {
-        const nb = regions[nid];
-        if (nb.owner !== pid) {
-          const score = r.units - nb.units;
-          if (score > bestScore) { bestScore = score; best = {from:r, to:nb}; }
+// ── AI turn ───────────────────────────────────────────────────────────────────
+function aiTurn(){
+  if(gamePhase!=="play")return;
+  const mine=regions.filter(r=>r.owner===1&&r.units>1);
+  if(mine.length){
+    let best=null,bestScore=-Infinity;
+    mine.forEach(r=>{
+      ADJ[r.id].forEach(nid=>{
+        const nb=regions[nid];
+        if(nb.owner!==1){
+          const score=r.units-nb.units+(nb.owner===0?0.5:0);
+          if(score>bestScore){bestScore=score;best={from:r,to:nb};}
         }
       });
     });
-    if (best && best.from.units > best.to.units * 0.6) {
-      doAttack(best.from, best.to);
-    } else if (mine.length) {
-      // просто укрепляем самый атакуемый
-      mine[0].units += 2;
-    }
-  });
-  // добавляем подкрепление игроку раз в 2 хода
-  turnNum++;
-  if (turnNum % 2 === 0) {
-    const myRegions = regions.filter(r => r.owner === 0);
-    if (myRegions.length) {
-      const bonus = 3 + Math.floor(myRegions.length / 3);
-      // даём бонус случайному своему региону
-      myRegions[Math.floor(Math.random()*myRegions.length)].units += bonus;
-      showLog(`🎁 Подкрепление: +${bonus} юнитов!`, 1800);
-    }
-    // ИИ тоже получает подкрепление
-    [1,2].forEach(pid => {
-      const aiR = regions.filter(r => r.owner === pid);
-      if (aiR.length) aiR[Math.floor(Math.random()*aiR.length)].units += 3 + Math.floor(aiR.length/3);
-    });
+    if(best&&best.from.units>1)doAttack(best.from,best.to);
   }
-  updateTurnInfo();
-  draw();
-  checkWin();
+  turnNum++;
+  if(turnNum%2===0){
+    const myR=regions.filter(r=>r.owner===0);
+    const aiR=regions.filter(r=>r.owner===1);
+    if(myR.length){
+      const bonus=3+Math.floor(myR.length/4);
+      myR[Math.floor(Math.random()*myR.length)].units+=bonus;
+      showLog("🎁 +"+bonus+" подкрепление!",1600);
+    }
+    if(aiR.length)aiR[Math.floor(Math.random()*aiR.length)].units+=3+Math.floor(aiR.length/4);
+  }
+  draw();checkWin();
 }
 
-function checkWin() {
-  const counts = [0,0,0,0];
-  regions.forEach(r => counts[r.owner]++);
-  if (counts[1] === 0 && counts[2] === 0) return endGame(true);
-  if (counts[0] === 0) return endGame(false);
+function checkWin(){
+  if(gamePhase!=="play")return;
+  const c=[0,0,0];regions.forEach(r=>c[r.owner]++);
+  if(c[1]===0)endGame(true);
+  else if(c[0]===0)endGame(false);
+}
+function endGame(won){
+  gamePhase="gameover";
+  document.querySelector("#overlay h2").textContent=won?"🏆 Победа!":"💀 Поражение";
+  document.querySelector("#overlay p").textContent=won
+    ?"Ты завоевал все территории! Карта твоя."
+    :"Враг захватил все твои земли. Попробуешь снова?";
+  document.querySelector(".player-badge").style.display="none";
+  document.getElementById("ov-btn").textContent="🔄 Ещё раз";
+  document.getElementById("overlay").classList.remove("hidden");
+  if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred(won?"success":"error");
 }
 
-function endGame(won) {
-  gamePhase = "gameover";
-  const ov = document.getElementById("overlay");
-  document.getElementById("ov-title").textContent = won ? "🏆 Победа!" : "💀 Поражение";
-  document.getElementById("ov-desc").textContent  = won
-    ? "Ты завоевал все территории! Карта твоя."
-    : "Противники захватили все твои земли. Попробуешь ещё раз?";
-  document.getElementById("ov-btn").textContent = "🔄 Ещё раз";
-  document.getElementById("phase-badge").textContent = "";
-  ov.classList.remove("hidden");
-  if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred(won?"success":"error");
-}
-
-// ── Геометрия: попадание точки в многоугольник ───────────────────────────────
-function pointInRegion(mx, my, r) {
-  const pts = r.pts.map(([x,y]) => [x*W, y*H]);
-  let inside = false;
-  for (let i=0,j=pts.length-1; i<pts.length; j=i++) {
+// ── Point-in-polygon ─────────────────────────────────────────────────────────
+function pip(mx,my,r){
+  const pts=r.pts.map(([x,y])=>[x*W,y*H]);
+  let inside=false;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
     const xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];
-    if (((yi>my)!==(yj>my)) && (mx<(xj-xi)*(my-yi)/(yj-yi)+xi)) inside=!inside;
+    if(((yi>my)!==(yj>my))&&(mx<(xj-xi)*(my-yi)/(yj-yi)+xi))inside=!inside;
   }
   return inside;
 }
 
-// ── Старт ───────────────────────────────────────────────────────────────────
-document.getElementById("ov-btn").addEventListener("click", () => {
+// ── Start ─────────────────────────────────────────────────────────────────────
+document.getElementById("ov-btn").addEventListener("click",()=>{
   initGame();
   document.getElementById("overlay").classList.add("hidden");
-  draw();
-  showLog("🗺 Атакуй соседей, завоюй карту!", 2500);
+  document.querySelector(".player-badge").style.display="";
+  document.querySelector("#overlay h2").textContent="⚔️ Битва за\nтерритория";
+  resize();
+  showLog("🗺 Перетяни синюю зону на соседнюю — атакуй!",2500);
 });
-
-initGame();
-resize();
+initGame();resize();
 </script>
 </body>
 </html>

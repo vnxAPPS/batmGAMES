@@ -91,24 +91,26 @@ html, body {
 #next-overlay .stat-lbl { font-size:8px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; }
 
 /* ── D-pad overlay (показывается один раз при старте, исчезает через 5с) ── */
+/*
+  Стандартная раскладка (как на клавиатуре):
+      [  ↑  ]
+  [←] [↓⚡] [→]
+  ↑ = поворот (центр вверху), ← ↓ → — нижний ряд
+*/
 #dpad {
   position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
   display:grid;
-  /* col: ← | ↓ | →  /  col2 centre = ↻ row above */
   grid-template-columns:56px 56px 56px;
   grid-template-rows:56px 56px;
   gap:8px; z-index:15;
-  opacity:1;
-  transition:opacity 1s ease;
+  opacity:1; transition:opacity 1s ease;
 }
 #dpad.dpad-hidden { opacity:0; pointer-events:none; }
 .dp {
   width:56px; height:56px;
   background:rgba(5,7,12,0.72);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border:1px solid rgba(255,255,255,0.13);
-  border-radius:14px;
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.13); border-radius:14px;
   display:flex; align-items:center; justify-content:center;
   font-size:22px; cursor:pointer;
   transition:transform .1s, background .1s, box-shadow .1s;
@@ -117,20 +119,19 @@ html, body {
 }
 .dp:active { transform:scale(.86); background:rgba(255,112,0,0.18); box-shadow:0 0 18px rgba(255,112,0,0.35); }
 
-/* ↻ — row 1 col 2 (центр сверху) */
+/* ↑/↻ — row 1 col 2 (центр сверху = поворот) */
 #dp-rot   { grid-column:2; grid-row:1; color:#ff7000; font-size:17px; font-weight:900;
   border-color:rgba(255,112,0,0.25); box-shadow:0 0 10px rgba(255,112,0,0.15); }
 /* ← — row 2 col 1 */
 #dp-left  { grid-column:1; grid-row:2; }
-/* ↓ — row 2 col 2 — ускорение, выделяем цветом */
-#dp-down  { grid-column:2; grid-row:2; font-size:17px; font-weight:900; color:#ffd23e;
+/* ↓ — row 2 col 2 — ускорение */
+#dp-down  { grid-column:2; grid-row:2; position:relative; flex-direction:column; gap:0;
+  font-size:17px; font-weight:900; color:#ffd23e;
   border-color:rgba(255,210,62,0.25); }
+#dp-down::after { content:'ускор.'; position:absolute; bottom:5px;
+  font-size:7px; font-weight:700; color:rgba(255,210,62,0.65); letter-spacing:.04em; }
 /* → — row 2 col 3 */
 #dp-right { grid-column:3; grid-row:2; }
-
-/* ↓ — подпись «ускор.» под стрелкой */
-#dp-down { position:relative; flex-direction:column; gap:1px; }
-#dp-down::after { content:'ускор.'; position:absolute; bottom:5px; font-size:7px; font-weight:700; color:rgba(255,210,62,0.7); letter-spacing:.04em; }
 
 /* ── Game overlay (start / game over) ── */
 .overlay {

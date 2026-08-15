@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>2048 — batmGAMES</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg1: #05070c;
+  --bg2: #0a0d12;
+  --card: #161d2b;
+  --text: #f2f4ff;
+  --muted: #8b92b0;
+  --border: rgba(255,255,255,0.07);
+  --accent: #ff7000;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  height:100%; width:100%;
+  background:var(--bg1); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  overflow:hidden; user-select:none; -webkit-tap-highlight-color:transparent;
+}
+#app { display:flex; flex-direction:column; height:100vh; max-width:480px; margin:0 auto; }
+
+/* ── Topbar ── */
+#topbar {
+  display:flex; align-items:center; padding:8px 14px; gap:10px;
+  background:var(--bg2); border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.back-btn {
+  display:flex; align-items:center; justify-content:center;
+  width:36px; height:36px; text-decoration:none; border-radius:10px;
+  background:rgba(255,112,0,0.12); border:1px solid rgba(255,112,0,0.35);
+  box-shadow:0 0 10px rgba(255,112,0,0.25),inset 0 0 8px rgba(255,112,0,0.08);
+  transition:all 0.15s; flex-shrink:0;
+}
+.back-btn:active { transform:scale(0.92); box-shadow:0 0 18px rgba(255,112,0,0.5); }
+.back-arrow {
+  display:block; width:14px; height:14px;
+  border-left:2.5px solid #ff7000; border-bottom:2.5px solid #ff7000;
+  transform:rotate(45deg) translateX(2px); filter:drop-shadow(0 0 4px #ff7000);
+}
+#topbar-title { flex:1; text-align:center; font-size:15px; font-weight:800; }
+
+/* ── Score row ── */
+#score-row {
+  display:flex; gap:8px; padding:10px 14px; flex-shrink:0;
+  justify-content:space-between;
+}
+.score-box {
+  flex:1; background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:8px 12px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+}
+.score-lbl { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; }
+.score-val { font-size:20px; font-weight:900; color:#ff7000; line-height:1.1; }
+#best-val  { color:#ffd23e; }
+
+/* ── New game button ── */
+#new-btn {
+  padding:0 18px; background:rgba(255,112,0,0.12);
+  border:1px solid rgba(255,112,0,0.3); border-radius:12px;
+  color:#ff7000; font-size:12px; font-weight:800; cursor:pointer;
+  transition:all .15s; white-space:nowrap; align-self:stretch;
+  display:flex; align-items:center;
+}
+#new-btn:active { background:rgba(255,112,0,0.25); transform:scale(.96); }
+
+/* ── Board ── */
+#board-wrap {
+  flex:1 1 0; display:flex; align-items:center; justify-content:center;
+  padding:8px; overflow:hidden;
+}
+#board {
+  display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr);
+  gap:8px; padding:10px;
+  background:rgba(255,255,255,0.04); border-radius:16px;
+  border:1px solid var(--border);
+  box-shadow:0 0 40px rgba(255,112,0,0.06);
+}
+.cell {
+  border-radius:10px; background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.05);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; transition:background .08s, color .08s;
+  position:relative; overflow:hidden;
+}
+.cell.pop {
+  animation: pop .12s ease-out;
+}
+@keyframes pop {
+  0%   { transform:scale(1); }
+  50%  { transform:scale(1.12); }
+  100% { transform:scale(1); }
+}
+.cell.merge {
+  animation: merge .15s ease-out;
+}
+@keyframes merge {
+  0%   { transform:scale(1.0); }
+  40%  { transform:scale(1.18); }
+  100% { transform:scale(1); }
+}
+
+/* ── Tile colors ── */
+.t2    { background:#1a2035; color:#d0d8ff; }
+.t4    { background:#1e2a42; color:#d0d8ff; }
+.t8    { background:#7c3300; color:#fff; }
+.t16   { background:#993f00; color:#fff; }
+.t32   { background:#b54a00; color:#fff; }
+.t64   { background:#cc5500; color:#fff; box-shadow:0 0 12px rgba(204,85,0,0.5); }
+.t128  { background:#e06000; color:#fff; box-shadow:0 0 16px rgba(224,96,0,0.55); }
+.t256  { background:#f97316; color:#fff; box-shadow:0 0 20px rgba(249,115,22,0.6); }
+.t512  { background:#ff7000; color:#fff; box-shadow:0 0 24px rgba(255,112,0,0.65); }
+.t1024 { background:#ffd23e; color:#1a0a00; box-shadow:0 0 28px rgba(255,210,62,0.6); }
+.t2048 { background:#fff; color:#1a0a00; box-shadow:0 0 36px rgba(255,255,255,0.5), 0 0 60px rgba(255,112,0,0.4); }
+.thigh { background:linear-gradient(135deg,#a23cf5,#ff7000); color:#fff;
+  box-shadow:0 0 36px rgba(162,60,245,0.6); }
+
+/* ── Overlay ── */
+#overlay {
+  position:fixed; inset:0; z-index:20;
+  background:rgba(5,7,12,0.88); backdrop-filter:blur(8px);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+}
+#overlay.hidden { display:none; }
+.ov-emoji { font-size:52px; }
+.ov-title { font-size:26px; font-weight:900; }
+.ov-sub   { font-size:13px; color:var(--muted); text-align:center; padding:0 24px; line-height:1.5; }
+.play-btn {
+  padding:14px 44px;
+  background:linear-gradient(135deg,#ff7000,#ff4500);
+  color:#fff; border:none; border-radius:999px;
+  font-size:16px; font-weight:800; cursor:pointer;
+  box-shadow:0 4px 24px rgba(255,112,0,0.45);
+  transition:transform .12s;
+}
+.play-btn:active { transform:scale(.96); }
+
+/* ── Toast ── */
+#toast {
+  position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  background:rgba(255,112,0,0.9); color:#fff;
+  padding:8px 20px; border-radius:999px; font-size:14px; font-weight:800;
+  pointer-events:none; opacity:0; transition:opacity .3s; z-index:30;
+  white-space:nowrap;
+}
+#toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <a class="back-btn" href="../"><span class="back-arrow"></span></a>
+    <div id="topbar-title">🔢 2048</div>
+  </div>
+
+  <div id="score-row">
+    <div class="score-box">
+      <span class="score-lbl">Счёт</span>
+      <span class="score-val" id="score-val">0</span>
+    </div>
+    <div class="score-box">
+      <span class="score-lbl">Рекорд</span>
+      <span class="score-val" id="best-val">0</span>
+    </div>
+    <button id="new-btn">↺ Новая</button>
+  </div>
+
+  <div id="board-wrap">
+    <div id="board"></div>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="ov-emoji">🔢</div>
+  <div class="ov-title">2048</div>
+  <div class="ov-sub">Свайпай — объединяй плитки.<br>Дойди до <b style="color:#ff7000">2048</b>!</div>
+  <button class="play-btn" id="start-btn">ИГРАТЬ</button>
+</div>
+
+<div id="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+const N = 4;
+let grid, score, best, gameOver2048;
+best = +localStorage.getItem('2048_best') || 0;
+document.getElementById('best-val').textContent = best;
+
+// ── Build DOM grid ──────────────────────────────────────────────
+const boardEl = document.getElementById('board');
+const cells   = [];
+let cellSize  = 0;
+
+function buildBoard() {
+  boardEl.innerHTML = '';
+  cells.length = 0;
+  const wrap   = document.getElementById('board-wrap');
+  const avail  = Math.min(wrap.clientWidth, wrap.clientHeight) - 16;
+  cellSize = Math.floor((avail - 20 - 8*3) / 4);
+  boardEl.style.width  = avail + 'px';
+  boardEl.style.height = avail + 'px';
+  for (let i = 0; i < 16; i++) {
+    const c = document.createElement('div');
+    c.className = 'cell';
+    c.style.width  = cellSize + 'px';
+    c.style.height = cellSize + 'px';
+    c.style.fontSize = Math.round(cellSize * 0.36) + 'px';
+    boardEl.appendChild(c);
+    cells.push(c);
+  }
+}
+
+window.addEventListener('resize', () => { buildBoard(); render(); });
+
+// ── State helpers ───────────────────────────────────────────────
+function idx(r, c) { return r * N + c; }
+
+function initGrid() {
+  grid = Array(N * N).fill(0);
+  score = 0;
+  gameOver2048 = false;
+  addTile(); addTile();
+}
+
+function addTile() {
+  const empty = [];
+  grid.forEach((v, i) => { if (!v) empty.push(i); });
+  if (!empty.length) return;
+  const i = empty[Math.floor(Math.random() * empty.length)];
+  grid[i] = Math.random() < 0.9 ? 2 : 4;
+  return i;
+}
+
+// ── Render ──────────────────────────────────────────────────────
+function tileClass(v) {
+  if (!v) return '';
+  if (v > 2048) return 'thigh';
+  return 't' + v;
+}
+
+let mergedSet = new Set();
+let newSet    = new Set();
+
+function render() {
+  cells.forEach((c, i) => {
+    const v = grid[i];
+    c.className = 'cell' + (v ? ' ' + tileClass(v) : '');
+    if (mergedSet.has(i)) c.classList.add('merge');
+    else if (newSet.has(i)) c.classList.add('pop');
+    c.textContent = v || '';
+    // remove animation class after it fires
+    if (mergedSet.has(i) || newSet.has(i)) {
+      const cl = c.classList.contains('merge') ? 'merge' : 'pop';
+      c.addEventListener('animationend', () => c.classList.remove(cl), {once:true});
+    }
+  });
+  mergedSet.clear(); newSet.clear();
+  document.getElementById('score-val').textContent = score;
+  if (score > best) {
+    best = score;
+    localStorage.setItem('2048_best', best);
+    document.getElementById('best-val').textContent = best;
+  }
+}
+
+// ── Move logic ──────────────────────────────────────────────────
+// Returns {newGrid, gained, hasMoved}
+function slideLine(line) {
+  const filtered = line.filter(v => v);
+  const merged   = [];
+  let gained = 0;
+  let i = 0;
+  while (i < filtered.length) {
+    if (i + 1 < filtered.length && filtered[i] === filtered[i+1]) {
+      const val = filtered[i] * 2;
+      merged.push(val);
+      gained += val;
+      i += 2;
+    } else {
+      merged.push(filtered[i]);
+      i++;
+    }
+  }
+  while (merged.length < N) merged.push(0);
+  return { merged, gained };
+}
+
+function move(dir) {
+  if (gameOver2048) return false;
+  const prev = [...grid];
+  mergedSet.clear(); newSet.clear();
+  let totalGained = 0;
+
+  if (dir === 'left' || dir === 'right') {
+    for (let r = 0; r < N; r++) {
+      let line = [];
+      for (let c = 0; c < N; c++) line.push(grid[idx(r,c)]);
+      if (dir === 'right') line.reverse();
+      const { merged, gained } = slideLine(line);
+      totalGained += gained;
+      if (dir === 'right') merged.reverse();
+      for (let c = 0; c < N; c++) {
+        const pos = idx(r, c);
+        if (merged[c] !== prev[pos] && merged[c] !== 0 && prev[pos] !== 0) mergedSet.add(pos);
+        grid[pos] = merged[c];
+      }
+    }
+  } else {
+    for (let c = 0; c < N; c++) {
+      let line = [];
+      for (let r = 0; r < N; r++) line.push(grid[idx(r,c)]);
+      if (dir === 'down') line.reverse();
+      const { merged, gained } = slideLine(line);
+      totalGained += gained;
+      if (dir === 'down') merged.reverse();
+      for (let r = 0; r < N; r++) {
+        const pos = idx(r, c);
+        if (merged[r] !== prev[pos] && merged[r] !== 0 && prev[pos] !== 0) mergedSet.add(pos);
+        grid[pos] = merged[r];
+      }
+    }
+  }
+
+  const hasMoved = grid.some((v, i) => v !== prev[i]);
+  if (!hasMoved) return false;
+
+  score += totalGained;
+  if (totalGained) haptic('light');
+
+  const newIdx = addTile();
+  if (newIdx !== undefined) newSet.add(newIdx);
+
+  render();
+  checkState();
+  return true;
+}
+
+function checkState() {
+  if (grid.includes(2048) && !localStorage.getItem('2048_won')) {
+    localStorage.setItem('2048_won', '1');
+    showToast('🎉 2048! Продолжай!');
+    if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+  }
+  if (!grid.includes(0)) {
+    // check if any move is possible
+    let canMove = false;
+    for (let r = 0; r < N && !canMove; r++)
+      for (let c = 0; c < N && !canMove; c++) {
+        const v = grid[idx(r,c)];
+        if (c+1 < N && grid[idx(r,c+1)] === v) canMove = true;
+        if (r+1 < N && grid[idx(r+1,c)] === v) canMove = true;
+      }
+    if (!canMove) endGame();
+  }
+}
+
+function endGame() {
+  gameOver2048 = true;
+  if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+  const ov = document.getElementById('overlay');
+  ov.innerHTML = `
+    <div class="ov-emoji">😵</div>
+    <div class="ov-title">Нет ходов!</div>
+    <div class="ov-sub">Счёт: <b style="color:#ff7000">${score}</b> · Рекорд: <b style="color:#ffd23e">${best}</b></div>
+    <button class="play-btn" id="start-btn">ЕЩЁ РАЗ</button>
+  `;
+  ov.classList.remove('hidden');
+  document.getElementById('start-btn').addEventListener('click', startGame);
+}
+
+function haptic(t) { if(tg?.HapticFeedback) tg.HapticFeedback.impactOccurred(t); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Start ───────────────────────────────────────────────────────
+function startGame() {
+  localStorage.removeItem('2048_won');
+  initGrid(); render();
+  document.getElementById('overlay').classList.add('hidden');
+}
+
+// ── Keyboard ────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  const map = { ArrowLeft:'left', ArrowRight:'right', ArrowUp:'up', ArrowDown:'down' };
+  if (map[e.key]) { move(map[e.key]); e.preventDefault(); }
+});
+
+// ── Touch swipe ─────────────────────────────────────────────────
+let tx=0, ty=0;
+document.getElementById('board-wrap').addEventListener('touchstart', e=>{
+  tx=e.touches[0].clientX; ty=e.touches[0].clientY; e.preventDefault();
+},{passive:false});
+document.getElementById('board-wrap').addEventListener('touchend', e=>{
+  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
+  if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+  if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
+  else move(dy > 0 ? 'down' : 'up');
+  e.preventDefault();
+},{passive:false});
+
+// ── New game button ──────────────────────────────────────────────
+document.getElementById('new-btn').addEventListener('click', () => {
+  startGame();
+  haptic('medium');
+});
+
+// ── Boot ────────────────────────────────────────────────────────
+buildBoard();
+</script>
+</body>
+</html>

@@ -129,6 +129,22 @@ const ctx = canvas.getContext("2d");
 const W = canvas.width, H = canvas.height;
 const GROUND_Y = H - 64;
 
+// ── Кастомный персонаж из редактора ─────────────────────────────────────────
+let _charRaw = null;
+try { _charRaw = JSON.parse(localStorage.getItem("batm_character") || "null"); } catch(e) {}
+const CHAR = {
+  legs:  _charRaw?.legs_color  ?? "#2d4fd6",
+  torso: _charRaw?.torso_color ?? "#22c55e",
+  arms:  _charRaw?.arms_color  ?? "#ffd23e",
+  head:  _charRaw?.head_color  ?? "#ffd23e",
+  hair:  _charRaw?.hair_style  ?? "none",
+  face:  _charRaw?.face_emotion ?? "smile",
+};
+function _darken(hex, amt = 55) {
+  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.max(0,r-amt)},${Math.max(0,g-amt)},${Math.max(0,b-amt)})`;
+}
+
 const scoreEl = document.getElementById("score");
 const bestEl = document.getElementById("best");
 const overlay = document.getElementById("overlay");
@@ -262,28 +278,73 @@ function drawPlayer(dt = 0) {
   ctx.ellipse(x + w / 2, GROUND_Y + 8, 24 * airFactor, 6 * airFactor, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // ноги (тёмно-синие, как классический noob)
-  roundRect(x + 4, y + h - 18 + legSwing * 0.4, 14, 18 - legSwing * 0.4, 4, "#2d4fd6");
-  roundRect(x + w - 18, y + h - 18 - legSwing * 0.4, 14, 18 + legSwing * 0.4, 4, "#2d4fd6");
-  // торс (зелёный)
-  roundRect(x, y + 16, w, 24, 6, "#22c55e");
-  // руки (жёлтые)
+  // ноги
+  roundRect(x + 4,      y + h - 18 + legSwing * 0.4, 14, 18 - legSwing * 0.4, 4, CHAR.legs);
+  roundRect(x + w - 18, y + h - 18 - legSwing * 0.4, 14, 18 + legSwing * 0.4, 4, CHAR.legs);
+  // торс
+  roundRect(x, y + 16, w, 24, 6, CHAR.torso);
+  // руки
   const armSwing = player.jumping ? -6 : Math.sin(player.legPhase) * 5;
-  roundRect(x - 10, y + 18 + armSwing, 10, 20, 4, "#ffd23e");
-  roundRect(x + w, y + 18 - armSwing, 10, 20, 4, "#ffd23e");
-  // голова (жёлтая)
-  roundRect(x + 5, y - 6, w - 10, 26, 8, "#ffd23e");
+  roundRect(x - 10, y + 18 + armSwing, 10, 20, 4, CHAR.arms);
+  roundRect(x + w,  y + 18 - armSwing, 10, 20, 4, CHAR.arms);
+  // голова
+  roundRect(x + 5, y - 6, w - 10, 26, 8, CHAR.head);
+
+  // причёска
+  const hairColor = _darken(CHAR.head, 55);
+  if (CHAR.hair === "default") {
+    roundRect(x + 5, y - 12, w - 10, 10, [5,5,0,0], hairColor);
+  } else if (CHAR.hair === "spiky") {
+    ctx.fillStyle = hairColor;
+    for (let i = 0; i < 4; i++) {
+      const sx = x + 8 + i * ((w - 10) / 3.5);
+      ctx.beginPath();
+      ctx.moveTo(sx, y - 2);
+      ctx.lineTo(sx - 5, y - 14);
+      ctx.lineTo(sx + 5, y - 14);
+      ctx.closePath(); ctx.fill();
+    }
+  } else if (CHAR.hair === "long") {
+    roundRect(x + 5, y - 12, w - 10, 10, [5,5,0,0], hairColor);
+    roundRect(x - 2, y - 2, 9, 20, 3, hairColor);
+    roundRect(x + w - 7, y - 2, 9, 20, 3, hairColor);
+  }
+
   // лицо
-  ctx.fillStyle = "#1a1a1a";
-  ctx.beginPath();
-  ctx.arc(x + 15, y + 5, 2.6, 0, Math.PI * 2);
-  ctx.arc(x + w - 15, y + 5, 2.6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#1a1a1a";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(x + w / 2, y + 9, 7, 0.15 * Math.PI, 0.85 * Math.PI);
-  ctx.stroke();
+  const faceColor = "#1a1a1a";
+  const eyeLX = x + 13, eyeRX = x + w - 13, eyeY = y + 5;
+  if (CHAR.face === "cool") {
+    // очки
+    ctx.fillStyle = "rgba(0,0,0,0.75)";
+    roundRect(eyeLX - 7, eyeY - 4, 13, 9, 3, "rgba(0,0,0,0.75)");
+    roundRect(eyeRX - 6, eyeY - 4, 13, 9, 3, "rgba(0,0,0,0.75)");
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    roundRect(eyeLX - 7, eyeY - 4, 13, 3, [3,3,0,0], "rgba(255,255,255,0.15)");
+    roundRect(eyeRX - 6, eyeY - 4, 13, 3, [3,3,0,0], "rgba(255,255,255,0.15)");
+  } else {
+    // обычные глаза
+    ctx.fillStyle = faceColor;
+    ctx.beginPath();
+    ctx.arc(eyeLX, eyeY, 2.6, 0, Math.PI * 2);
+    ctx.arc(eyeRX, eyeY, 2.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // рот
+  ctx.strokeStyle = faceColor; ctx.lineWidth = 2;
+  if (CHAR.face === "happy" || CHAR.face === "smile") {
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + 9, CHAR.face === "happy" ? 9 : 7,
+            0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  } else if (CHAR.face === "serious") {
+    ctx.beginPath();
+    ctx.moveTo(x + 12, y + 14); ctx.lineTo(x + w - 12, y + 14);
+    ctx.stroke();
+  } else if (CHAR.face === "cool") {
+    ctx.beginPath();
+    ctx.arc(x + w / 2 + 3, y + 14, 5, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+  }
 }
 
 function drawObstacles() {
