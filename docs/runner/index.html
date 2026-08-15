@@ -57,20 +57,30 @@
   #overlay h1 { font-size: 26px; font-weight: 800; }
   #overlay p { color: var(--muted); font-size: 14px; max-width: 300px; line-height: 1.5; }
   #overlay .score-line { font-size: 18px; font-weight: 700; color: var(--accent); }
+  /* ── Liquid Glass Button ── */
+  .btn-base{position:relative;display:inline-block;padding:3px;border-radius:21px;margin-top:8px;}
+  .btn-base--blue{background:linear-gradient(135deg,#00a2ff,#0062ff);}
   button {
-    margin-top: 8px;
-    font: inherit;
-    font-weight: 800;
-    font-size: 16px;
-    color: #fff;
-    background: linear-gradient(135deg, #00a2ff, #0062ff);
-    border: none;
-    border-radius: 14px;
-    padding: 14px 34px;
-    cursor: pointer;
-    box-shadow: 0 6px 24px rgba(0, 130, 255, 0.4);
+    position:relative;margin-top:0;padding:14px 44px;
+    background:radial-gradient(circle at var(--light-x,50%) var(--light-y,50%),rgba(255,255,255,0.35),transparent 50%),rgba(255,255,255,0.12);
+    backdrop-filter:blur(8px) saturate(1.2);
+    color:#fff; border:none; border-radius:18px;
+    font-size:16px; font-weight:800; cursor:pointer;
+    box-shadow:inset 0 1px 3px rgba(255,255,255,0.6),inset 0 -10px 20px rgba(0,0,0,0.15),0 4px 24px rgba(0,0,0,0.3);
+    transform:scale(var(--btn-scale,1));transition:box-shadow .3s;
   }
-  button:active { transform: scale(0.96); }
+  button::before{content:'';position:absolute;inset:0;border-radius:inherit;
+    border:1.5px solid rgba(255,255,255,0.4);
+    mask:linear-gradient(135deg,#000 30%,transparent 70%);pointer-events:none;}
+  button::after{content:'';position:absolute;top:8%;left:15%;width:40%;height:25%;
+    background:radial-gradient(ellipse,rgba(255,255,255,0.5),transparent 70%);
+    transform:translate(var(--light-offset-x,0),var(--light-offset-y,0));
+    transition:transform .6s cubic-bezier(.25,.46,.45,.94);pointer-events:none;border-radius:50%;}
+  @media(prefers-reduced-motion:reduce){
+    button{transition:transform .2s;}
+    button:hover{transform:scale(1.02);}
+    button:active{transform:scale(0.98);}
+  }
   .back-btn {
     display: flex;
     align-items: center;
@@ -115,7 +125,9 @@
   <div id="overlay">
     <h1>🏃 Roblox Runner</h1>
     <p>Тапни или нажми пробел, чтобы прыгать. Перепрыгивай кубики — скорость растёт!</p>
-    <button id="startBtn">Играть</button>
+    <div class="btn-base btn-base--blue">
+      <button id="startBtn">Играть</button>
+    </div>
   </div>
 </div>
 
@@ -435,10 +447,82 @@ function gameOver() {
     <h1>💥 Ой!</h1>
     <div class="score-line">Счёт: ${final} · Рекорд: ${best}</div>
     <p>${final >= best && final > 0 ? "Новый рекорд! 🎉" : "Кубики коварны. Попробуешь ещё?"}</p>
-    <button id="againBtn">Ещё раз</button>`;
+    <div class="btn-base btn-base--blue">
+      <button id="againBtn">Ещё раз</button>
+    </div>`;
   overlay.classList.remove("hidden");
-  document.getElementById("againBtn").addEventListener("click", start);
+  const btn = document.getElementById("againBtn");
+  btn.addEventListener("click", start);
+  initLiquidGlass(btn);
 }
+
+// ── Liquid Glass Physics ────────────────────────────────────────────────────
+class SpringValue {
+  constructor(initial, stiffness = 0.08, damping = 0.82) {
+    this.current = initial;
+    this.target = initial;
+    this.velocity = 0;
+    this.stiffness = stiffness;
+    this.damping = damping;
+  }
+  update() {
+    this.velocity += (this.target - this.current) * this.stiffness;
+    this.velocity *= this.damping;
+    this.current += this.velocity;
+  }
+  set(newTarget) { this.target = newTarget; }
+}
+
+function initLiquidGlass(btn) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const springs = {
+    lightX: new SpringValue(0.5, 0.08, 0.82),
+    lightY: new SpringValue(0.5, 0.08, 0.82),
+    scale: new SpringValue(1.0, 0.15, 0.75),
+    offsetX: new SpringValue(0, 0.08, 0.82),
+    offsetY: new SpringValue(0, 0.08, 0.82),
+  };
+  let animFrame = null;
+  const loop = () => {
+    springs.lightX.update();
+    springs.lightY.update();
+    springs.scale.update();
+    springs.offsetX.update();
+    springs.offsetY.update();
+    btn.style.setProperty('--light-x', `${springs.lightX.current * 100}%`);
+    btn.style.setProperty('--light-y', `${springs.lightY.current * 100}%`);
+    btn.style.setProperty('--btn-scale', springs.scale.current);
+    btn.style.setProperty('--light-offset-x', `${springs.offsetX.current}px`);
+    btn.style.setProperty('--light-offset-y', `${springs.offsetY.current}px`);
+    animFrame = requestAnimationFrame(loop);
+  };
+  btn.addEventListener('pointerenter', () => { cancelAnimationFrame(animFrame); loop(); });
+  btn.addEventListener('pointermove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    springs.lightX.set(x);
+    springs.lightY.set(y);
+    springs.offsetX.set((x - 0.5) * 12);
+    springs.offsetY.set((y - 0.5) * 12);
+  });
+  btn.addEventListener('pointerdown', () => { springs.scale.set(0.965); });
+  btn.addEventListener('pointerup', () => {
+    springs.scale.set(1.01);
+    setTimeout(() => springs.scale.set(1.0), 50);
+  });
+  btn.addEventListener('pointerleave', () => {
+    cancelAnimationFrame(animFrame);
+    springs.lightX.set(0.5);
+    springs.lightY.set(0.5);
+    springs.scale.set(1.0);
+    springs.offsetX.set(0);
+    springs.offsetY.set(0);
+  });
+}
+
+document.getElementById("startBtn").addEventListener("click", start);
+initLiquidGlass(document.getElementById("startBtn"));
 
 function loop(now) {
   if (!state.running) return;
