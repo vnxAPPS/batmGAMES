@@ -103,29 +103,22 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
 const tg=window.Telegram?.WebApp;
 if(tg){tg.ready();tg.expand();}
 
-const RAW_REGIONS=[
-  {id:0, name:"Арктика",        cx:.18,cy:.14,pts:[[.04,.04],[.32,.04],[.35,.22],[.20,.26],[.05,.18]]},
-  {id:1, name:"Таёжный край",   cx:.12,cy:.32,pts:[[.04,.20],[.20,.28],[.22,.44],[.06,.44]]},
-  {id:2, name:"Западный берег", cx:.28,cy:.38,pts:[[.21,.28],[.36,.24],[.40,.44],[.22,.46]]},
-  {id:3, name:"Равнина",        cx:.22,cy:.54,pts:[[.06,.46],[.22,.46],[.24,.64],[.06,.64]]},
-  {id:4, name:"Полюс",          cx:.58,cy:.10,pts:[[.44,.04],[.74,.04],[.74,.18],[.44,.22]]},
-  {id:5, name:"Хребет",         cx:.60,cy:.30,pts:[[.44,.24],[.60,.20],[.66,.40],[.44,.42]]},
-  {id:6, name:"Морской город",  cx:.74,cy:.26,pts:[[.62,.20],[.78,.08],[.90,.18],[.82,.38],[.68,.40]]},
-  {id:7, name:"Остров Восток",  cx:.78,cy:.46,pts:[[.82,.40],[.96,.36],[.96,.56],[.80,.56]]},
-  {id:8, name:"Пустыня",        cx:.18,cy:.72,pts:[[.06,.66],[.24,.64],[.26,.80],[.08,.82]]},
-  {id:9, name:"Саванна",        cx:.32,cy:.68,pts:[[.24,.64],[.42,.62],[.42,.78],[.26,.80]]},
-  {id:10,name:"Джунгли",        cx:.22,cy:.86,pts:[[.08,.84],[.26,.82],[.28,.96],[.08,.96]]},
-  {id:11,name:"Лагуна",         cx:.38,cy:.84,pts:[[.28,.80],[.44,.78],[.46,.96],[.28,.96]]},
-  {id:12,name:"Степь",          cx:.60,cy:.62,pts:[[.46,.56],[.66,.54],[.68,.72],[.46,.72]]},
-  {id:13,name:"Перевал",        cx:.76,cy:.62,pts:[[.68,.52],[.86,.52],[.88,.72],[.68,.72]]},
-  {id:14,name:"Южный берег",    cx:.62,cy:.80,pts:[[.46,.74],[.68,.74],[.66,.92],[.46,.94]]},
-  {id:15,name:"Архипелаг",      cx:.80,cy:.80,pts:[[.70,.74],[.88,.74],[.92,.94],[.68,.94]]},
+// Simplified map: 9 towers, clearer layout
+const TOWERS=[
+  {id:0,x:.15,y:.20,name:"Север"},
+  {id:1,x:.50,y:.15,name:"Гора"},
+  {id:2,x:.85,y:.25,name:"Восток"},
+  {id:3,x:.20,y:.50,name:"Запад"},
+  {id:4,x:.50,y:.50,name:"Центр"},
+  {id:5,x:.80,y:.50,name:"Форт"},
+  {id:6,x:.25,y:.80,name:"Долина"},
+  {id:7,x:.55,y:.75,name:"Мост"},
+  {id:8,x:.85,y:.85,name:"Юг"},
 ];
 const ADJ={
-  0:[1,2,4],   1:[0,2,3],       2:[0,1,3,9],     3:[1,2,8,9],
-  4:[0,5,6],   5:[4,6,7,2],     6:[4,5,7],        7:[5,6,13],
-  8:[3,9,10],  9:[2,3,8,11,12], 10:[8,11],        11:[9,10,14],
-  12:[9,7,13,14],13:[7,12,15],  14:[12,11,15],    15:[13,14],
+  0:[1,3],     1:[0,2,4],     2:[1,5],
+  3:[0,4,6],   4:[1,3,5,7],   5:[2,4,8],
+  6:[3,7],     7:[4,6,8],     8:[5,7],
 };
 const PLAYERS=[
   {id:0,name:"Ты",   color:"#3b9eff",darkColor:"#1a5ca8",isHuman:true},
@@ -133,15 +126,16 @@ const PLAYERS=[
 ];
 const NEUTRAL={id:2,color:"#555c7a",darkColor:"#3a405a"};
 
-let regions,turnNum,gamePhase,logTimer,hintHidden;
+let towers,units,gamePhase,logTimer,hintHidden,prodTimer;
 let dragFrom=null,dragPos=null,dragHover=null,animFrame=null;
 
 function initGame(){
-  regions=RAW_REGIONS.map(r=>({...r,owner:2,units:10}));
-  turnNum=1; gamePhase="play"; hintHidden=false;
+  towers=TOWERS.map(t=>({...t,owner:2,units:8}));
+  units=[];
+  gamePhase="play"; hintHidden=false; prodTimer=0;
   dragFrom=null; dragPos=null; dragHover=null;
-  regions[0].owner=0; regions[0].units=15;   // player: top-left
-  regions[15].owner=1; regions[15].units=15; // AI: bottom-right
+  towers[0].owner=0; towers[0].units=20;  // player starts strong
+  towers[8].owner=1; towers[8].units=15;  // AI in opposite corner
   document.getElementById("hint").classList.remove("hidden");
 }
 
@@ -155,61 +149,95 @@ function resize(){
 }
 window.addEventListener("resize",resize);
 const rx=x=>x*W, ry=y=>y*H;
-function ownerStyle(r){return r.owner===2?NEUTRAL:PLAYERS[r.owner];}
+function ownerStyle(t){return t.owner===2?NEUTRAL:PLAYERS[t.owner];}
 
 function draw(){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle="#1e2235"; ctx.fillRect(0,0,W,H);
-  // ocean dots
+
+  // ocean dots background
   ctx.fillStyle="rgba(59,158,255,0.05)";
   for(let xi=0;xi<W;xi+=40)for(let yi=0;yi<H;yi+=40){
     ctx.beginPath();ctx.arc(xi+20,yi+20,6,0,Math.PI*2);ctx.fill();
   }
-  regions.forEach(r=>{
-    const own=ownerStyle(r);
-    const isFrom=r.id===dragFrom;
-    const isHover=dragFrom!==null&&r.id===dragHover&&r.id!==dragFrom;
-    const isValid=dragFrom!==null&&ADJ[dragFrom]?.includes(r.id)&&r.id!==dragFrom;
-    const pts=r.pts.map(([x,y])=>[rx(x),ry(y)]);
-    ctx.save();
-    if(isFrom){ctx.shadowColor=own.color;ctx.shadowBlur=22;}
-    else if(isHover&&isValid){ctx.shadowColor="#fff";ctx.shadowBlur=20;}
+
+  // connections between towers (static lines)
+  ctx.strokeStyle="rgba(255,255,255,0.08)";ctx.lineWidth=1.5;
+  for(let id in ADJ){
+    const from=towers[id];
+    ADJ[id].forEach(tid=>{
+      const to=towers[tid];
+      ctx.beginPath();
+      ctx.moveTo(rx(from.x),ry(from.y));
+      ctx.lineTo(rx(to.x),ry(to.y));
+      ctx.stroke();
+    });
+  }
+
+  // moving unit groups
+  units.forEach(u=>{
+    const style=ownerStyle({owner:u.owner});
+    ctx.fillStyle=style.color+"aa";
     ctx.beginPath();
-    ctx.moveTo(pts[0][0],pts[0][1]);
-    for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
-    ctx.closePath();
-    ctx.fillStyle=own.color+(isFrom||isValid?"ff":"bb");
+    ctx.arc(u.x,u.y,Math.min(18,6+u.amount/3),0,Math.PI*2);
     ctx.fill();
-    if(isFrom||(isHover&&isValid)){ctx.strokeStyle="#fff";ctx.lineWidth=2.5;}
+    ctx.fillStyle="#fff";
+    ctx.font="700 11px system-ui";
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(u.amount,u.x,u.y);
+  });
+
+  // towers
+  towers.forEach(t=>{
+    const style=ownerStyle(t);
+    const isFrom=t.id===dragFrom;
+    const isHover=dragFrom!==null&&t.id===dragHover&&t.id!==dragFrom;
+    const isValid=dragFrom!==null&&ADJ[dragFrom]?.includes(t.id);
+
+    const tx=rx(t.x),ty=ry(t.y);
+    const rad=Math.min(W,H)*0.065;
+
+    ctx.save();
+    if(isFrom){ctx.shadowColor=style.color;ctx.shadowBlur=22;}
+    else if(isHover&&isValid){ctx.shadowColor="#fff";ctx.shadowBlur=20;}
+
+    // tower circle
+    ctx.beginPath();ctx.arc(tx,ty,rad,0,Math.PI*2);
+    ctx.fillStyle=style.color+(isFrom||isValid?"ff":"cc");
+    ctx.fill();
+
+    if(isFrom||(isHover&&isValid)){ctx.strokeStyle="#fff";ctx.lineWidth=3;}
     else if(isValid){ctx.strokeStyle="rgba(255,255,255,0.55)";ctx.lineWidth=2;}
     else{ctx.strokeStyle="rgba(255,255,255,0.18)";ctx.lineWidth=1.5;}
     ctx.stroke();
     ctx.restore();
-    // units circle
-    const cx2=rx(r.cx),cy2=ry(r.cy);
-    const rad=Math.min(W,H)*0.04;
-    ctx.beginPath();ctx.arc(cx2,cy2,rad,0,Math.PI*2);
-    ctx.fillStyle=r.owner===2?"rgba(255,255,255,0.88)":own.darkColor;
+
+    // inner circle with units
+    ctx.beginPath();ctx.arc(tx,ty,rad*0.7,0,Math.PI*2);
+    ctx.fillStyle=t.owner===2?"rgba(255,255,255,0.88)":style.darkColor;
     ctx.fill();
-    ctx.strokeStyle="rgba(255,255,255,0.35)";ctx.lineWidth=1.5;ctx.stroke();
-    ctx.fillStyle=r.owner===2?"#222":"#fff";
-    ctx.font=`800 ${Math.round(rad*0.9)}px system-ui,sans-serif`;
+    ctx.strokeStyle="rgba(255,255,255,0.3)";ctx.lineWidth=1.5;ctx.stroke();
+
+    ctx.fillStyle=t.owner===2?"#222":"#fff";
+    ctx.font=`800 ${Math.round(rad*0.5)}px system-ui`;
     ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(r.units,cx2,cy2);
+    ctx.fillText(t.units,tx,ty);
   });
-  drawArrow();
-  updateBar();updateTurnInfo();
+
+  drawDragLine();
+  updateBar();
 }
 
-function drawArrow(){
+function drawDragLine(){
   if(dragFrom===null||dragPos===null)return;
-  const fr=regions[dragFrom];
-  const x1=rx(fr.cx),y1=ry(fr.cy),x2=dragPos.x,y2=dragPos.y;
+  const fr=towers[dragFrom];
+  const x1=rx(fr.x),y1=ry(fr.y),x2=dragPos.x,y2=dragPos.y;
   const dist=Math.hypot(x2-x1,y2-y1);
   if(dist<12)return;
   const angle=Math.atan2(y2-y1,x2-x1);
   const isValid=dragHover!==null&&dragHover!==dragFrom&&ADJ[dragFrom]?.includes(dragHover);
   const col=isValid?"rgba(255,255,255,0.92)":"rgba(255,255,255,0.4)";
+
   ctx.save();
   ctx.strokeStyle=col;ctx.lineWidth=3;
   ctx.setLineDash([8,5]);
@@ -235,16 +263,13 @@ function animLoop(){
 
 // ── UI helpers ──────────────────────────────────────────────────────────────
 function updateBar(){
-  const c=[0,0,0];regions.forEach(r=>c[r.owner]++);
+  const c=[0,0,0];towers.forEach(t=>c[t.owner]++);
   document.getElementById("bar-blue").style.flex=c[0];
   document.getElementById("bar-red").style.flex=c[1];
   document.getElementById("bar-gray").style.flex=c[2];
   document.getElementById("lbl-blue").textContent="🔵 Ты: "+c[0];
   document.getElementById("lbl-red").textContent="🤖 Враг: "+c[1];
-  document.getElementById("lbl-neutral").textContent="⬜ "+c[2];
-}
-function updateTurnInfo(){
-  document.getElementById("turn-info").textContent=gamePhase==="play"?"Твой ход":"";
+  document.getElementById("lbl-neutral").textContent="⬜ "+(c[2]||"");
 }
 function showLog(msg,dur=1800){
   const el=document.getElementById("log");
@@ -255,6 +280,60 @@ function showLog(msg,dur=1800){
 function hideHint(){
   if(hintHidden)return;hintHidden=true;
   document.getElementById("hint").classList.add("hidden");
+}
+
+// ── Game loop ────────────────────────────────────────────────────────────────
+let lastTime=0;
+function gameLoop(now){
+  if(gamePhase!=="play")return;
+  const dt=Math.min((now-lastTime)/1000,0.1);
+  lastTime=now;
+
+  // production: +1 unit/sec per tower
+  prodTimer+=dt;
+  if(prodTimer>=1){
+    prodTimer-=1;
+    towers.forEach(t=>{
+      if(t.owner!==2)t.units++;
+    });
+  }
+
+  // move units
+  units.forEach(u=>{
+    const dx=u.targetX-u.x,dy=u.targetY-u.y;
+    const dist=Math.hypot(dx,dy);
+    if(dist<3){u.arrived=true;return;}
+    const speed=dt*180;
+    u.x+=dx/dist*speed;
+    u.y+=dy/dist*speed;
+  });
+
+  // handle arrivals
+  units.filter(u=>u.arrived).forEach(u=>{
+    const target=towers[u.targetId];
+    if(target.owner===u.owner){
+      target.units+=u.amount;
+    }else{
+      target.units-=u.amount;
+      if(target.units<0){
+        target.owner=u.owner;
+        target.units=Math.abs(target.units);
+        showLog(`🏴 ${towers[u.fromId].name} захватил ${target.name}!`,2200);
+        if(tg?.HapticFeedback)tg.HapticFeedback.impactOccurred("medium");
+      }
+    }
+  });
+  units=units.filter(u=>!u.arrived);
+
+  checkWin();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+function startGame(){
+  initGame();resize();lastTime=performance.now();
+  gamePhase="play";
+  requestAnimationFrame(gameLoop);
 }
 
 // ── Pointer events (drag-to-attack) ─────────────────────────────────────────
@@ -268,7 +347,10 @@ canvas.addEventListener("pointerdown",e=>{
   if(gamePhase!=="play")return;
   e.preventDefault();
   const{mx,my}=getPos(e);
-  const hit=regions.find(r=>pip(mx,my,r));
+  const hit=towers.find(t=>{
+    const tx=rx(t.x),ty=ry(t.y),rad=Math.min(W,H)*0.065;
+    return Math.hypot(mx-tx,my-ty)<rad;
+  });
   if(hit&&hit.owner===0&&hit.units>1){
     dragFrom=hit.id;dragPos={x:mx,y:my};dragHover=null;
     canvas.setPointerCapture(e.pointerId);
@@ -282,25 +364,31 @@ canvas.addEventListener("pointermove",e=>{
   e.preventDefault();
   const{mx,my}=getPos(e);
   dragPos={x:mx,y:my};
-  dragHover=regions.find(r=>pip(mx,my,r))?.id??null;
+  dragHover=towers.find(t=>{
+    const tx=rx(t.x),ty=ry(t.y),rad=Math.min(W,H)*0.065;
+    return Math.hypot(mx-tx,my-ty)<rad;
+  })?.id??null;
 },{passive:false});
 
 canvas.addEventListener("pointerup",e=>{
   if(dragFrom===null)return;
   e.preventDefault();
   const{mx,my}=getPos(e);
-  const tgt=regions.find(r=>pip(mx,my,r));
+  const tgt=towers.find(t=>{
+    const tx=rx(t.x),ty=ry(t.y),rad=Math.min(W,H)*0.065;
+    return Math.hypot(mx-tx,my-ty)<rad;
+  });
   if(tgt&&tgt.id!==dragFrom&&ADJ[dragFrom]?.includes(tgt.id)){
-    const from=regions[dragFrom];
-    if(tgt.owner===0){
-      if(from.units>1){
-        const moved=Math.floor(from.units/2);
-        from.units-=moved;tgt.units+=moved;
-        showLog("🛡 "+from.name+" → "+tgt.name+": +"+moved);
-        setTimeout(aiTurn,700);
-      }
-    }else if(from.units>1){
-      doAttack(from,tgt);
+    const from=towers[dragFrom];
+    const amount=Math.floor(from.units/2);
+    if(amount>0){
+      from.units-=amount;
+      units.push({
+        x:rx(from.x),y:ry(from.y),
+        targetX:rx(tgt.x),targetY:ry(tgt.y),
+        targetId:tgt.id,fromId:from.id,
+        amount,owner:0,arrived:false
+      });
       setTimeout(aiTurn,900);
     }
   }
@@ -313,96 +401,64 @@ canvas.addEventListener("pointercancel",()=>{
   dragFrom=null;dragPos=null;dragHover=null;draw();
 });
 
-// ── Combat ───────────────────────────────────────────────────────────────────
-function roll(n){return Array.from({length:n},()=>1+(Math.random()*6|0)).sort((a,b)=>b-a);}
-
-function doAttack(from,to){
-  const ad=roll(Math.min(3,from.units-1)),dd=roll(Math.min(2,to.units));
-  let al=0,dl=0;
-  const p=Math.min(ad.length,dd.length);
-  for(let i=0;i<p;i++){if(ad[i]>dd[i])dl++;else al++;}
-  from.units-=al;to.units-=dl;
-  if(to.units<=0){
-    const mv=Math.max(1,from.units-1);
-    from.units-=mv;to.units=mv;to.owner=from.owner;
-    showLog("🏴 "+from.name+" захватил "+to.name+"!",2200);
-    if(tg?.HapticFeedback)tg.HapticFeedback.impactOccurred("medium");
-    checkWin();
-  }else{
-    const ico=from.owner===0?"⚔️":"🤖";
-    showLog(ico+" "+from.name+"→"+to.name+": −"+al+" / −"+dl,1800);
-  }
-}
-
 // ── AI turn ───────────────────────────────────────────────────────────────────
 function aiTurn(){
   if(gamePhase!=="play")return;
-  const mine=regions.filter(r=>r.owner===1&&r.units>1);
-  if(mine.length){
-    let best=null,bestScore=-Infinity;
-    mine.forEach(r=>{
-      ADJ[r.id].forEach(nid=>{
-        const nb=regions[nid];
-        if(nb.owner!==1){
-          const score=r.units-nb.units+(nb.owner===0?0.5:0);
-          if(score>bestScore){bestScore=score;best={from:r,to:nb};}
-        }
-      });
+  const mine=towers.filter(t=>t.owner===1&&t.units>2);
+  if(!mine.length)return;
+
+  let best=null,bestScore=-Infinity;
+  mine.forEach(t=>{
+    ADJ[t.id].forEach(nid=>{
+      const nb=towers[nid];
+      if(nb.owner!==1){
+        const score=t.units-nb.units+(nb.owner===0?10:5);
+        if(score>bestScore){bestScore=score;best={from:t,to:nb};}
+      }
     });
-    if(best&&best.from.units>1)doAttack(best.from,best.to);
+  });
+
+  if(best&&best.from.units>2){
+    const amount=Math.floor(best.from.units*0.6);
+    best.from.units-=amount;
+    units.push({
+      x:rx(best.from.x),y:ry(best.from.y),
+      targetX:rx(best.to.x),targetY:ry(best.to.y),
+      targetId:best.to.id,fromId:best.from.id,
+      amount,owner:1,arrived:false
+    });
   }
-  turnNum++;
-  if(turnNum%2===0){
-    const myR=regions.filter(r=>r.owner===0);
-    const aiR=regions.filter(r=>r.owner===1);
-    if(myR.length){
-      const bonus=3+Math.floor(myR.length/4);
-      myR[Math.floor(Math.random()*myR.length)].units+=bonus;
-      showLog("🎁 +"+bonus+" подкрепление!",1600);
-    }
-    if(aiR.length)aiR[Math.floor(Math.random()*aiR.length)].units+=3+Math.floor(aiR.length/4);
-  }
-  draw();checkWin();
 }
 
 function checkWin(){
   if(gamePhase!=="play")return;
-  const c=[0,0,0];regions.forEach(r=>c[r.owner]++);
+  const c=[0,0];towers.forEach(t=>{if(t.owner<2)c[t.owner]++;});
   if(c[1]===0)endGame(true);
   else if(c[0]===0)endGame(false);
 }
+
 function endGame(won){
   gamePhase="gameover";
   document.querySelector("#overlay h2").textContent=won?"🏆 Победа!":"💀 Поражение";
   document.querySelector("#overlay p").textContent=won
-    ?"Ты завоевал все территории! Карта твоя."
-    :"Враг захватил все твои земли. Попробуешь снова?";
+    ?"Ты завоевал все башни!"
+    :"Враг захватил твои территории. Попробуешь снова?";
   document.querySelector(".player-badge").style.display="none";
   document.getElementById("ov-btn").textContent="🔄 Ещё раз";
   document.getElementById("overlay").classList.remove("hidden");
   if(tg?.HapticFeedback)tg.HapticFeedback.notificationOccurred(won?"success":"error");
 }
 
-// ── Point-in-polygon ─────────────────────────────────────────────────────────
-function pip(mx,my,r){
-  const pts=r.pts.map(([x,y])=>[x*W,y*H]);
-  let inside=false;
-  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
-    const xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];
-    if(((yi>my)!==(yj>my))&&(mx<(xj-xi)*(my-yi)/(yj-yi)+xi))inside=!inside;
-  }
-  return inside;
-}
-
 // ── Start ─────────────────────────────────────────────────────────────────────
 document.getElementById("ov-btn").addEventListener("click",()=>{
-  initGame();
   document.getElementById("overlay").classList.add("hidden");
   document.querySelector(".player-badge").style.display="";
-  document.querySelector("#overlay h2").textContent="⚔️ Битва за\nтерритория";
-  resize();
-  showLog("🗺 Перетяни синюю зону на соседнюю — атакуй!",2500);
+  document.querySelector("#overlay h2").textContent="⚔️ Битва за\nтерриторию";
+  startGame();
+  showLog("🗺 Перетяни синюю башню на соседнюю — атакуй!",2500);
 });
+
+window.addEventListener("resize",resize);
 initGame();resize();
 </script>
 </body>

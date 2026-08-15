@@ -147,24 +147,28 @@ html, body {
 .ov-sub    { font-size:13px; color:var(--muted); text-align:center; padding:0 24px; line-height:1.5; }
 .play-btn  {
   margin-top:8px; padding:14px 44px;
-  background:linear-gradient(135deg,#ff7000 0%,#ff4500 100%);
-  color:#fff; border:none; border-radius:999px;
+  background:linear-gradient(135deg,rgba(255,112,0,0.95),rgba(255,69,0,0.95));
+  backdrop-filter:blur(8px);
+  color:#fff; border:none; border-radius:18px;
   font-size:16px; font-weight:800; cursor:pointer; letter-spacing:.04em;
-  box-shadow:0 4px 24px rgba(255,112,0,0.45), 0 0 0 1px rgba(255,112,0,0.3);
-  transition:transform .12s, box-shadow .12s, filter .3s;
+  box-shadow:0 4px 24px rgba(255,112,0,0.45), 0 0 0 1px rgba(255,112,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition:transform .12s, box-shadow .12s, border-radius .6s cubic-bezier(.4,0,.2,1), filter .6s;
 }
-.play-btn:hover{filter:url(#gooey);animation:blob 2s ease-in-out infinite;}
-.play-btn:active { transform:scale(0.96); box-shadow:0 2px 12px rgba(255,112,0,0.6); filter:url(#gooey); animation:blob-press .4s ease-out forwards; }
-@keyframes blob{
-  0%,100%{border-radius:60% 40% 50% 50%;}
-  25%{border-radius:40% 60% 55% 45%;}
-  50%{border-radius:50% 50% 40% 60%;}
-  75%{border-radius:55% 45% 60% 40%;}
+.play-btn:hover{
+  filter:url(#gooey);
+  border-radius:45% 55% 50% 50%;
+  animation:blob-hover 3s ease-in-out infinite;
 }
-@keyframes blob-press{
-  0%{border-radius:999px;}
-  50%{border-radius:45% 55% 50% 50%;}
-  100%{border-radius:50% 50% 45% 55%;}
+.play-btn:active {
+  transform:scale(0.96);
+  border-radius:50% 50% 45% 55%;
+  box-shadow:0 2px 12px rgba(255,112,0,0.6), inset 0 2px 4px rgba(0,0,0,0.2);
+}
+@keyframes blob-hover{
+  0%,100%{border-radius:45% 55% 50% 50%;}
+  25%{border-radius:50% 50% 55% 45%;}
+  50%{border-radius:55% 45% 50% 50%;}
+  75%{border-radius:50% 50% 45% 55%;}
 }
 </style>
 </head>
