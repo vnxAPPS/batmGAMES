@@ -120,7 +120,7 @@ html,body{height:100%;width:100%;background:var(--bg1);color:var(--text);
     <div class="overlay" id="overlay">
       <div class="ov-emoji">💣</div>
       <div class="ov-title">Сапёр</div>
-      <div class="ov-sub">Открывай клетки, избегай мин. Долгий тап — флажок.</div>
+      <div class="ov-sub">Тап — флажок 🚩 · Долгий тап — открыть</div>
       <div class="mode-selector">
         <div class="mode-card selected" data-mode="classic">
           <div class="mode-card-title">🎯 Классика</div>
@@ -306,6 +306,7 @@ function updateUI(){
 }
 
 // ── Input ────────────────────────────────────────────────────────────────────
+// Тап = флажок (безопасно), долгий тап = открыть, ПКМ = флажок
 let longPressTimer=null,longPressTarget=null;
 document.getElementById("board").addEventListener("pointerdown",e=>{
   if(gameOver)return;
@@ -315,7 +316,7 @@ document.getElementById("board").addEventListener("pointerdown",e=>{
   const r=+el.dataset.r,c=+el.dataset.c;
   longPressTarget={r,c};
   longPressTimer=setTimeout(()=>{
-    toggleFlag(r,c);
+    reveal(r,c);
     if(tg?.HapticFeedback)tg.HapticFeedback.impactOccurred("medium");
     longPressTarget=null;
   },400);
@@ -328,7 +329,10 @@ document.getElementById("board").addEventListener("pointerup",e=>{
   if(!el)return;
   e.preventDefault();
   const r=+el.dataset.r,c=+el.dataset.c;
-  if(r===longPressTarget.r&&c===longPressTarget.c)reveal(r,c);
+  if(r===longPressTarget.r&&c===longPressTarget.c){
+    toggleFlag(r,c);
+    if(tg?.HapticFeedback)tg.HapticFeedback.impactOccurred("light");
+  }
   longPressTarget=null;
 },{passive:false});
 
@@ -336,7 +340,15 @@ document.getElementById("board").addEventListener("pointercancel",()=>{
   clearTimeout(longPressTimer);longPressTarget=null;
 });
 
-document.getElementById("board").addEventListener("contextmenu",e=>e.preventDefault());
+document.getElementById("board").addEventListener("contextmenu",e=>{
+  e.preventDefault();
+  if(gameOver)return;
+  const el=e.target.closest(".cell");
+  if(!el)return;
+  const r=+el.dataset.r,c=+el.dataset.c;
+  toggleFlag(r,c);
+  if(tg?.HapticFeedback)tg.HapticFeedback.impactOccurred("light");
+});
 
 // ── Mode selection ───────────────────────────────────────────────────────────
 document.querySelectorAll(".mode-card").forEach(card=>{
@@ -352,7 +364,7 @@ document.getElementById("start-btn").addEventListener("click",()=>{
   document.querySelector(".mode-selector").style.display="";
   document.querySelector(".ov-emoji").textContent="💣";
   document.querySelector(".ov-title").textContent="Сапёр";
-  document.querySelector(".ov-sub").textContent="Открывай клетки, избегай мин. Долгий тап — флажок.";
+  document.querySelector(".ov-sub").textContent="Тап — флажок 🚩 · Долгий тап — открыть";
   document.querySelector("#start-btn").textContent="ИГРАТЬ";
   initGame();
 });
