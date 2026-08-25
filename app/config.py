@@ -29,5 +29,10 @@ class Settings(BaseSettings):
     # Paths
     BASE_DIR: Path = Path(__file__).resolve().parent.parent
 
+    # Google Sheets CRM
+    GOOGLE_SHEETS_CREDENTIALS: str = "./data/google-service-account.json"
+    GOOGLE_SHEETS_CRM_ID: str = ""
+    GOOGLE_SHEETS_SYNC_HOURS: int = 6
+
 
 settings = Settings()
