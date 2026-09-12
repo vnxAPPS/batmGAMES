@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>batmGAMES</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/_platform/styles.css">
+</head>
+<body>
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- Platform Shell -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div id="platform-shell">
+
+    <!-- Header -->
+    <div id="platform-header">
+      <button id="back-btn" class="icon-btn" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div id="score-display">0</div>
+      <div id="character-avatar"></div>
+    </div>
+
+    <!-- Game Canvas -->
+    <div id="game-container">
+      <canvas id="game-canvas"></canvas>
+    </div>
+
+    <!-- Overlay Screens -->
+    <div id="overlay-screen" class="hidden">
+
+      <!-- Start Screen -->
+      <div id="start-screen" class="screen">
+        <div id="character-preview"></div>
+        <h1 id="game-title">Игра</h1>
+        <p id="game-desc">Описание игры</p>
+        <div id="best-score" class="best-score hidden"></div>
+
+        <div class="btn-base btn-base--orange">
+          <button id="play-btn" class="liquid-glass-btn">ИГРАТЬ</button>
+        </div>
+      </div>
+
+      <!-- Game Over Screen -->
+      <div id="gameover-screen" class="screen hidden">
+        <div id="character-result"></div>
+        <h2 class="screen-title">Игра окончена</h2>
+        <div id="score-result" class="score-result"></div>
+        <div id="new-record" class="new-record hidden">🏆 Новый рекорд!</div>
+
+        <div class="buttons-group">
+          <div class="btn-base btn-base--orange">
+            <button id="retry-btn" class="liquid-glass-btn">ЕЩЁ РАЗ</button>
+          </div>
+          <div class="btn-base btn-base--blue">
+            <button id="menu-btn" class="liquid-glass-btn liquid-glass-btn--small">В МЕНЮ</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- Platform Core Script -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <script type="module">
+    import Platform from '/_platform/platform.js';
+
+    // Get game slug from URL: /play.html?game=runner
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameSlug = urlParams.get('game');
+
+    if (!gameSlug) {
+      console.error('No game specified in URL');
+      window.location.href = '/';
+    } else {
+      // Initialize platform
+      Platform.init();
+
+      // Load game
+      Platform.loadGame(gameSlug);
+    }
+  </script>
+</body>
+</html>
