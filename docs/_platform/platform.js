@@ -81,7 +81,7 @@ class BatmGamesPlatform {
       console.log(`🎮 Loading game: ${slug}`);
 
       // Dynamic import of game module
-      const gameModule = await import(`/_games/${slug}.js`);
+      const gameModule = await import(`../_games/${slug}.js`);
       this.currentGame = gameModule.default;
 
       // Validate game API
@@ -245,7 +245,7 @@ class BatmGamesPlatform {
     }
 
     // Go to main menu
-    window.location.href = '/';
+    window.location.href = 'index.html';
   }
 
   showError(message) {

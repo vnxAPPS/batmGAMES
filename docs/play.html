@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>batmGAMES</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="/_platform/styles.css">
+  <link rel="stylesheet" href="_platform/styles.css">
 </head>
 <body>
   <!-- ══════════════════════════════════════════════════════════════ -->
@@ -68,7 +68,7 @@
   <!-- Platform Core Script -->
   <!-- ══════════════════════════════════════════════════════════════ -->
   <script type="module">
-    import Platform from '/_platform/platform.js';
+    import Platform from './_platform/platform.js';
 
     // Get game slug from URL: /play.html?game=runner
     const urlParams = new URLSearchParams(window.location.search);
@@ -76,7 +76,7 @@
 
     if (!gameSlug) {
       console.error('No game specified in URL');
-      window.location.href = '/';
+      window.location.href = 'index.html';
     } else {
       // Initialize platform
       Platform.init();
