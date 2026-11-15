@@ -77,26 +77,22 @@
     background: linear-gradient(135deg, #1a1f2e 0%, #0f1320 100%);
     border: 1px solid rgba(162,60,245,0.2);
     border-radius: 20px;
-    padding: 16px 18px;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
     gap: 14px;
     text-decoration: none;
     color: var(--text);
     position: relative;
-    overflow: hidden;
-    transition: transform 0.15s, box-shadow 0.15s;
+    min-height: 82px;
+    /* overflow hidden removed — it was collapsing the card height */
+    transition: transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
   .profile-card:active { transform: scale(0.97); }
-  .profile-card::before {
-    content: '';
-    position: absolute;
-    inset: -60% -30% auto;
-    height: 120px;
-    background: #a23cf5;
-    filter: blur(55px);
-    opacity: 0.18;
-    pointer-events: none;
+  /* glow via box-shadow instead of absolute pseudo to avoid height collapse */
+  .profile-card {
+    box-shadow: 0 0 60px -10px rgba(162,60,245,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
   }
   .profile-avatar {
     width: 54px;
