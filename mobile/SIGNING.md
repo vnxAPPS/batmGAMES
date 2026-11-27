@@ -28,10 +28,12 @@ else
 fi
 cloudshell download upload.jks
 cloudshell download password.txt
+cloudshell download upload.jks.b64
 ```
 
 Должна появиться строка **«ПРОВЕРКА ПРОЙДЕНА … (длина 32)»**, и браузер
-скачает два файла. **Сохрани оба минимум в два места** (менеджер паролей,
+скачает три файла (на каждый спросит разрешение). `upload.jks.b64` — тот же
+ключ, записанный текстом: это значение секрета `ANDROID_KEYSTORE`. **Сохрани `upload.jks` и `password.txt` минимум в два места** (менеджер паролей,
 флешка): ключ без пароля бесполезен, пароль без ключа тоже.
 
 ## 2. Четыре секрета в GitHub — по одному
@@ -54,3 +56,13 @@ Actions → New repository secret**. Каждый секрет отдельно:
 После четвёртого секрета запусти сборку: **Actions → vnxmath-android → Run
 workflow**. В сводке запуска строка «Подпись» должна быть `CN=batmGAMES…`, а
 не `Android Debug`.
+
+## Если ключ уже создан, а `upload.jks.b64` не скачался
+
+Ключ пересоздавать не нужно. В Cloud Shell:
+
+```bash
+cd ~/batmgames-key && cloudshell download upload.jks.b64
+```
+
+Или открой файл в **Open Editor** и скопируй содержимое оттуда.
