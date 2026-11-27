@@ -118,8 +118,14 @@ jobs:
 
       - name: Сборка
         run: |
-          flutter build appbundle --release --build-number=${{ steps.version.outputs.code }}
-          flutter build apk --release --build-number=${{ steps.version.outputs.code }}
+          # Портал плагинов Gradle иногда отвечает «не найдено» на артефакты
+          # Kotlin, нужные самому Flutter. Это сбой портала, не кода: второй
+          # заход обычно проходит. Настоящая ошибка сборки упадёт оба раза.
+          build() {
+            flutter build appbundle --release --build-number=${{ steps.version.outputs.code }} &&
+            flutter build apk --release --build-number=${{ steps.version.outputs.code }}
+          }
+          build || { echo "::warning::Сборка упала, повтор через 30 с."; sleep 30; build; }
 
       - name: Проверки собранного APK
         env:
