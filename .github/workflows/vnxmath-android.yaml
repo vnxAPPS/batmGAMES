@@ -1,0 +1,236 @@
+# vnxMATH — математические загадки (mobile/vnxmath, Flutter, Android).
+#
+# Конвейер: анализ и тесты → подписанная сборка AAB/APK с проверками →
+# прогон на эмуляторе, который проходит первый уровень и снимает скриншоты
+# для страницы в Google Play.
+#
+# Ключ загрузки общий для всех мобильных игр репозитория: секреты
+# ANDROID_KEYSTORE, ANDROID_KEY_ALIAS, ANDROID_STORE_PASSWORD,
+# ANDROID_KEY_PASSWORD (как создать — mobile/SIGNING.md).
+name: vnxmath-android
+
+on:
+  push:
+    paths:
+      - mobile/vnxmath/**
+      - .github/workflows/vnxmath-android.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vnxmath-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: 3.47.6
+  APP_ID: com.vnxapps.math
+
+defaults:
+  run:
+    working-directory: mobile/vnxmath
+
+jobs:
+  test:
+    name: Анализ и тесты
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      # Тесты проверяют все 60 уровней исполнением их правил и раскладку
+      # каждого уровня на трёх размерах экрана.
+      - run: flutter test
+
+  build:
+    name: Сборка AAB и APK
+    needs: [test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      artifact: ${{ steps.meta.outputs.artifact }}
+      release: ${{ steps.signing.outputs.release }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+
+      - name: Ключ загрузки
+        id: signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          missing=""
+          [ -n "$KEYSTORE_B64" ] || missing="$missing ANDROID_KEYSTORE"
+          [ -n "$KEY_ALIAS" ] || missing="$missing ANDROID_KEY_ALIAS"
+          [ -n "$STORE_PASSWORD" ] || missing="$missing ANDROID_STORE_PASSWORD"
+          [ -n "$KEY_PASSWORD" ] || missing="$missing ANDROID_KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::warning::Нет секретов подписи:$missing. Сборка будет с отладочным ключом: играть можно, загрузить в Google Play нельзя. Как создать — mobile/SIGNING.md."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Секреты, вставленные из буфера, часто несут пробелы и переводы строк.
+          alias=$(printf '%s' "$KEY_ALIAS" | tr -d '\r\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+          spw=$(printf '%s' "$STORE_PASSWORD" | tr -d '\r\n')
+          kpw=$(printf '%s' "$KEY_PASSWORD" | tr -d '\r\n')
+          if [ "$kpw" != "$spw" ]; then
+            echo "::error::ANDROID_KEY_PASSWORD не совпадает с ANDROID_STORE_PASSWORD. У ключа из Cloud Shell (PKCS12) они одинаковые: вставь в оба секрета один и тот же пароль."
+            exit 1
+          fi
+          printf '%s' "$KEYSTORE_B64" | tr -d '\r\n ' | base64 -d > android/upload.jks
+          if ! keytool -list -keystore android/upload.jks -storepass "$spw" -alias "$alias" > /dev/null 2>&1; then
+            echo "::error::Ключ не открывается: проверь секреты ANDROID_KEYSTORE, ANDROID_STORE_PASSWORD и ANDROID_KEY_ALIAS."
+            exit 1
+          fi
+          {
+            echo "storeFile=upload.jks"
+            echo "storePassword=$spw"
+            echo "keyAlias=$alias"
+            echo "keyPassword=$kpw"
+          } > android/key.properties
+          echo "release=true" >> "$GITHUB_OUTPUT"
+          echo "✓ ключ загрузки подключён"
+
+      - name: Номер сборки
+        id: version
+        run: |
+          # Google Play требует, чтобы versionCode рос с каждой загрузкой:
+          # минуты с 1 января 2026 растут сами и не повторяются.
+          code=$(( ($(date -u +%s) - $(date -u -d 2026-01-01 +%s)) / 60 ))
+          name=$(sed -nE 's/^version: ([0-9.]+)\+.*/\1/p' pubspec.yaml)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "versionName $name, versionCode $code"
+
+      - name: Сборка
+        run: |
+          # Портал плагинов Gradle иногда отвечает «не найдено» на артефакты
+          # Kotlin, нужные самому Flutter. Это сбой портала, не кода: второй
+          # заход обычно проходит. Настоящая ошибка сборки упадёт оба раза.
+          build() {
+            flutter build appbundle --release --build-number=${{ steps.version.outputs.code }} &&
+            flutter build apk --release --build-number=${{ steps.version.outputs.code }}
+          }
+          build || { echo "::warning::Сборка упала, повтор через 30 с."; sleep 30; build; }
+
+      - name: Проверки собранного APK
+        env:
+          IS_RELEASE: ${{ steps.signing.outputs.release }}
+        run: |
+          aapt2=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          apk=build/app/outputs/flutter-apk/app-release.apk
+          aab=build/app/outputs/bundle/release/app-release.aab
+          pkg=$("$aapt2" dump badging "$apk" | sed -nE "s/^package: name='([^']+)'.*/\1/p")
+          [ "$pkg" = "$APP_ID" ] || { echo "::error::Имя пакета $pkg, ожидалось $APP_ID"; exit 1; }
+          echo "✓ имя пакета $pkg"
+
+          # Игра обещает в анкете безопасности данных, что не ходит в сеть.
+          # Обещание держится, пока в APK нет разрешения INTERNET.
+          perms=$("$aapt2" dump permissions "$apk" | sed -nE "s/.*name='([^']+)'.*/\1/p" | sort)
+          if printf '%s\n' "$perms" | grep -q '^android.permission.INTERNET$'; then
+            echo "::error::В APK появилось разрешение INTERNET: анкета безопасности данных станет неверной."
+            exit 1
+          fi
+          echo "✓ разрешения INTERNET нет"
+
+          cert=$(keytool -printcert -jarfile "$aab" 2>&1 || true)
+          owner=$(printf '%s\n' "$cert" | grep -m1 -E '^(Owner|Владелец):' | sed 's/^\s*//')
+          sha=$(printf '%s\n' "$cert" | grep -m1 'SHA256:' | sed 's/^\s*//')
+          if [ "$IS_RELEASE" = "true" ] && printf '%s' "$owner" | grep -q 'Android Debug'; then
+            echo "::error::Секреты есть, а AAB подписан отладочным ключом."
+            exit 1
+          fi
+          {
+            echo "## vnxMATH"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Пакет | \`$pkg\` |"
+            echo "| Версия | ${{ steps.version.outputs.name }} (${{ steps.version.outputs.code }}) |"
+            echo "| Подпись | ${owner:-?} |"
+            echo "| SHA256 | \`${sha#SHA256: }\` |"
+            echo "| Разрешения | ${perms:-нет} |"
+            echo ""
+            if [ "$IS_RELEASE" = "true" ]; then
+              echo "AAB подписан ключом загрузки и готов для Google Play."
+            else
+              echo "**Отладочная подпись**: для Google Play добавь секреты ANDROID_KEYSTORE, ANDROID_KEY_ALIAS, ANDROID_STORE_PASSWORD, ANDROID_KEY_PASSWORD (mobile/SIGNING.md)."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Собрать артефакты
+        id: meta
+        run: |
+          mkdir -p ../../dist-math
+          cp build/app/outputs/bundle/release/app-release.aab ../../dist-math/vnxMATH-play.aab
+          cp build/app/outputs/flutter-apk/app-release.apk ../../dist-math/vnxMATH.apk
+          suffix=""
+          [ "${{ steps.signing.outputs.release }}" = "true" ] || suffix="-DEBUGKEY"
+          echo "artifact=vnxmath-${{ steps.version.outputs.code }}$suffix" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ steps.meta.outputs.artifact }}
+          path: dist-math/
+          retention-days: 30
+
+  smoke:
+    name: Эмулятор и скриншоты
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v6
+        with:
+          name: ${{ needs.build.outputs.artifact }}
+          path: dist-math
+
+      - name: Включить KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Экран 1080×1920: Google Play принимает скриншоты, у которых длинная
+      # сторона не больше двух коротких.
+      - name: Эмулятор, прохождение уровня, скриншоты
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash mobile/vnxmath/tool/emulator-smoke.sh dist-math/vnxMATH.apk
+
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: screens-${{ needs.build.outputs.artifact }}
+          path: smoke/
+          retention-days: 30
