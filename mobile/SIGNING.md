@@ -51,6 +51,6 @@ Actions → New repository secret**. Каждый секрет отдельно:
 | 3 | `ANDROID_STORE_PASSWORD` | содержимое `password.txt` (32 символа) |
 | 4 | `ANDROID_KEY_PASSWORD` | то же, что в № 3 |
 
-После четвёртого секрета запусти сборку: **Actions → vnxmind-android → Run
+После четвёртого секрета запусти сборку: **Actions → vnxmath-android → Run
 workflow**. В сводке запуска строка «Подпись» должна быть `CN=batmGAMES…`, а
 не `Android Debug`.
