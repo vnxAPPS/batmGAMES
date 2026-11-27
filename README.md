@@ -21,6 +21,8 @@
   /fnf-beat    — FNF Beat Battle Solo
   /slide9      — FNF Slidenotefication 9
   /territory   — Битва за территорию
+/mobile        — нативные игры для Google Play (Flutter), см. mobile/README.md
+  /vnxmind     — vnxMIND: математические загадки
 ```
 
 ## 🚀 Запуск

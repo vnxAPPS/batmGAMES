@@ -1,0 +1,6 @@
+# Ключи подписи и пароли не попадают в git ни при каких условиях.
+*.jks
+*.keystore
+key.properties
+*password*.txt
+*.jks.b64
