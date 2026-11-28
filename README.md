@@ -23,6 +23,7 @@
   /territory   — Битва за территорию
 /mobile        — нативные игры для Google Play (Flutter), см. mobile/README.md
   /vnxmath     — vnxMATH: математические загадки
+  /vnxlight    — vnxLIGHT: фонарик
 ```
 
 ## 🚀 Запуск
